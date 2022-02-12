@@ -1,0 +1,25 @@
+name: vbb-backend-staging
+services:
+  - name: server
+    github:
+      repo: VillageBookBuilders/vbb-portal-packend
+      branch: master
+      deploy_on_push: true
+    run_command: gunicorn --worker-tmp-dir /dev/shm config.wsgi
+jobs:
+  - name: migrate
+    kind: PRE_DEPLOY
+    github:
+      repo: VillageBookBuilders/vbb-portal-packend
+      branch: master
+      deploy_on_push: true
+    run_command: python manage.py migrate
+static_sites:
+  - name: static
+    github:
+      repo: VillageBookBuilders/vbb-portal-packend
+      branch: master
+      deploy_on_push: true
+    output_dir: staticfiles
+    routes:
+      - path: /static
