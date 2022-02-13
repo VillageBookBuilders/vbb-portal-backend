@@ -50,7 +50,7 @@ services:
       - ./config:/app/config:z
       - ./vbb:/app/vbb:z
     ports:
-      - "7000:7000"
+      - "9000:9000"
     command: /start-docs
 
   redis:

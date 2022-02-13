@@ -1,9 +1,9 @@
-.. vbb documentation master file, created by
+.. VBB documentation master file, created by
    sphinx-quickstart.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to vbb's documentation!
+Welcome to VBB's documentation!
 ======================================================================
 
 .. toctree::
