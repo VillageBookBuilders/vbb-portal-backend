@@ -306,6 +306,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    # https://github.com/vbabiy/djangorestframework-camel-case
     # renders and parse snake to camel case and back again
     "DEFAULT_RENDERER_CLASSES": (
         "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
@@ -318,6 +319,8 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
         # Any other parsers
     ),
+    # Schema for autodocks
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
@@ -333,6 +336,7 @@ SPECTACULAR_SETTINGS = {
     "SERVERS": [
         {"url": "https://127.0.0.1:8000", "description": "Local Development server"},
         {"url": "https://villagebookbuilders.org", "description": "Production server"},
+        {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
     ],
 }
 # Your stuff...
