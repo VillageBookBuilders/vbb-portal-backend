@@ -1,0 +1,4 @@
+localhost.vbb.org
+tls /Users/Hal/.config/local-certs/localhost.vbb.org.pem /Users/Hal/.config/local-certs/localhost.vbb.org-key.pem
+reverse_proxy /api/* localhost:8000
+reverse_proxy /* localhost:3000

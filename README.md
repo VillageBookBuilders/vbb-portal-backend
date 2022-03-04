@@ -83,4 +83,40 @@ create a `.env` file based on `.env_example` (run `cp .env_example .env`)
 
 #### Setup DB
 
-create database: `createdb vbb`
+- create database: `createdb vbb`
+- run migrations: `python manage.py migrate`
+
+#### Setup Caddy
+
+[Caddy](https://caddyserver.com/docs/getting-started) is the proxy service we use to connect the backend app and the frontend app and allows us to serve the same service as a single domain rather than sub domains
+
+- install with `brew install caddy`
+- start with either:
+  `caddy run --config /full/path/to/vbb/repository/Caddyfile` ( this will start the service and end when the terminal is closed )
+  or
+  `caddy start --config /full/path/to/vbb/repository/Caddyfile` ( this will start the service and end only when you run `caddy stop`)
+
+[Following this Medium article](https://medium.com/@devahmedshendy/traditional-setup-run-local-development-over-https-using-caddy-964884e75232)
+
+- install mkcert `brew install mkcert` and after `mkcert -install`
+- Make a directory to store our certificates, I used `~/.config/local-certs/`
+- run `mkcert "localhost.vbb.org"`
+- Cert locations will then be `~/.config/local-certs/localhost.vbb.org.pem` and `~/.config/local-certs/localhost.vbb.org-key.pem`
+- run `caddy trust`
+- Add `localhost.vbb.org` to your `/private/etc/hosts` file.
+  Your `hosts` file should look something like:
+
+  ```bash
+  127.0.0.1	localhost localhost.vbb.org
+  ```
+
+  **NOTES**
+
+  - If you're using Insomnia you'll need to disable checking for SSL certificates
+  - If you're using Firefox you will need to restart Firefox to allow local ssl certificates to reload
+
+- Start both the backend under it's directory ( `python manage.py runserver`) and the frontend under it's ( `yarn start`)
+
+- You may need to close the browser window the frontend automatically opens
+- Navigate to: `https://localhost.vbb.org/`
+- You should see the landing page

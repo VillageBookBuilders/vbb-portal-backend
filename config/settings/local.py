@@ -11,7 +11,7 @@ SECRET_KEY = env(
     default="itG1dEHdlO9lJvo9IlIcl4gCo34pgxVPVtGVkgx2Hotv1cnH0p8swclNYpJJ0EYR",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "localhost.vbb.org"]
 
 # CACHES
 # ------------------------------------------------------------------------------
