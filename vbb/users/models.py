@@ -26,7 +26,7 @@ class Organization(models.Model):
     """
     Outside Organization from VBB
 
-    Tipicaly refers to a corporate partner
+    Typically refers to a corporate partner
     """
 
     email_domain = models.CharField(max_length=255, unique=True)
@@ -37,12 +37,10 @@ class Organization(models.Model):
         return self.name
 
 
-class Program(models.Model):
+class Library(models.Model):
     """
-    Program site under VBB
+    Library site under VBB
     """
-
-    advisors = models.ManyToManyField(User)
 
     announcements = models.CharField(max_length=255)
     is_accepting_new_mentors = models.BooleanField(default=False)
@@ -50,6 +48,18 @@ class Program(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class LibrarianProfile(models.Model):
+    """
+    Librarian profile for a user
+    """
+
+    library = models.ForeignKey(Library, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Librarian Profile for {self.user.email}"
 
 
 class Language(models.Model):
@@ -97,11 +107,11 @@ class MentorProfile(models.Model):
         NOT_REVIEWED = "Not Reviewed", _("Not Reviewed")
         REJECTED = "Rejected", _("Rejected")
 
-    assigned_program = models.ForeignKey(
-        Program, on_delete=models.DO_NOTHING, null=True
+    assigned_library = models.ForeignKey(
+        Library, on_delete=models.DO_NOTHING, null=True
     )
     careers = models.ManyToManyField(Career, related_name="+")
-    languages = models.ManyToManyField(Language, related_name="+")
+    mentoring_languages = models.ManyToManyField(Language, related_name="+")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True)
     subjects = models.ManyToManyField(Subject, related_name="+")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -130,7 +140,7 @@ class MentorProfile(models.Model):
 
         Combines both model required fields and soft requirements.
         """
-        has_user_timezone = self.get("user").get("time_zone")
-        has_application_video = self.get("application_video_url")
+        has_user_timezone = self.user.time_zone
+        has_application_video = self.application_video_url and not self.organization
 
         return has_user_timezone and has_application_video
