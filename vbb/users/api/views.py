@@ -24,7 +24,8 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         serializer = UserSerializer(request.user, context={"request": request})
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-
+# TODO : Add Authorisation Here
+# TODO : Move to Class Based Views
 @api_view(["GET"])
 def all_users(request: Request) -> Response:
     print(f"protected router {request}")
@@ -33,7 +34,8 @@ def all_users(request: Request) -> Response:
     )
     return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-
+# TODO : Add Authorisation Here
+# TODO : Move to Class Based Views
 @api_view(["GET"])
 @permission_classes([])
 def example_none_protected_route(request: Request) -> Response:
