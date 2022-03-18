@@ -8,6 +8,7 @@ VBB Booking Portal Backend
 License: MIT
 
 [![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=b4a8e079838e&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+
 ## Settings
 
 Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
@@ -16,11 +17,11 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 ### Setting Up Your Users
 
--   To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to your console to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
+- To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to your console to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
 
--   To create an **superuser account**, use this command:
+- To create an **superuser account**, use this command:
 
-        $ python manage.py createsuperuser
+      $ python manage.py createsuperuser
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
@@ -38,6 +39,7 @@ To run the tests, check your test coverage, and generate an HTML coverage report
     $ coverage html
     $ open htmlcov/index.html
 
+
 #### Running tests with pytest
 
     $ pytest
@@ -52,12 +54,12 @@ This app comes with Celery.
 
 To run a celery worker:
 
-``` bash
+```bash
 cd vbb
 celery -A config.celery_app worker -l info
 ```
 
-Please note: For Celery's import magic to work, it is important *where* the celery commands are run. If you are in the same folder with *manage.py*, you should be right.
+Please note: For Celery's import magic to work, it is important _where_ the celery commands are run. If you are in the same folder with _manage.py_, you should be right.
 
 ### Sentry
 
@@ -73,3 +75,13 @@ The following details how to deploy this application.
 ### Docker
 
 See detailed [cookiecutter-django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
+
+### Local Setup
+
+Add `export DJANGO_READ_DOT_ENV_FILE=True` to your `.bashrc` or `.zshrc` file
+
+create a `.env` file based on `.env_example` (run `cp .env_example .env`)
+
+#### Setup DB
+
+create database: `createdb vbb`

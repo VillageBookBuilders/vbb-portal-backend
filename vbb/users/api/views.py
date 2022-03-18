@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -23,3 +24,26 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+
+# TODO : Add Authorisation Here
+# TODO : Move to Class Based Views
+@api_view(["GET"])
+def all_users(request: Request) -> Response:
+    print(f"protected router {request}")
+    serializer = UserSerializer(
+        User.objects.all(), context={"request": request}, many=True
+    )
+    return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+
+# TODO : Add Authorisation Here
+# TODO : Move to Class Based Views
+@api_view(["GET"])
+@permission_classes([])
+def example_none_protected_route(request: Request) -> Response:
+    print(f"not protected route {request}")
+    serializer = UserSerializer(
+        User.objects.all(), context={"request": request}, many=True
+    )
+    return Response(status=status.HTTP_200_OK, data=serializer.data)
