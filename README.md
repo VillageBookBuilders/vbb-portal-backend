@@ -39,6 +39,7 @@ To run the tests, check your test coverage, and generate an HTML coverage report
     $ coverage html
     $ open htmlcov/index.html
 
+
 #### Running tests with pytest
 
     $ pytest
@@ -84,4 +85,3 @@ create a `.env` file based on `.env_example` (run `cp .env_example .env`)
 #### Setup DB
 
 create database: `createdb vbb`
-
