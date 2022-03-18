@@ -1,6 +1,9 @@
+import pytz
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
 
 class User(AbstractUser):
@@ -10,13 +13,11 @@ class User(AbstractUser):
     check forms.SignupForm and forms.SocialSignupForms accordingly.
     """
 
-    email = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
-    password = models.CharField(max_length=255)
     # time_zone is a softly required field. Not required at registration
     # but required to complete registration for all user profiles
-    time_zone = models.CharField(max_length=255, null=True)
-    username = models.CharField(max_length=255, unique=True, null=True)
+    time_zone = models.CharField(max_length=255, null=True, choices=TIMEZONES)
 
     def __str__(self):
         return self.email
@@ -107,9 +108,7 @@ class MentorProfile(models.Model):
         NOT_REVIEWED = "Not Reviewed", _("Not Reviewed")
         REJECTED = "Rejected", _("Rejected")
 
-    assigned_library = models.ForeignKey(
-        Library, on_delete=models.DO_NOTHING, null=True
-    )
+    assigned_library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, null=True)
     careers = models.ManyToManyField(Career, related_name="+")
     mentoring_languages = models.ManyToManyField(Language, related_name="+")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True)
