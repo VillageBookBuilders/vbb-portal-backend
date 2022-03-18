@@ -84,3 +84,4 @@ create a `.env` file based on `.env_example` (run `cp .env_example .env`)
 #### Setup DB
 
 create database: `createdb vbb`
+
