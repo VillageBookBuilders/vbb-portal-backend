@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    "djoser",
 ]
 
 LOCAL_APPS = [
@@ -309,6 +310,40 @@ SPECTACULAR_SETTINGS = {
         {"url": "https://villagebookbuilders.org", "description": "Production server"},
         {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
     ],
+}
+
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+
+# DJOSER Config
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL": FRONTEND_URL + "/api/v1/auth/password/reset/confirm/{uid}/{token}",
+    "USERNAME_RESET_CONFIRM_URL": FRONTEND_URL + "/api/v1/auth/username/reset/confirm/{uid}/{token}",
+    "ACTIVATION_URL": FRONTEND_URL + "/api/v1/auth/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": True,
+    "SERIALIZERS": {},
+    "EMAIl": {
+        "activation": "vbb.users.emails.ActivationEmail",
+        "confirmation": "vbb.users.emails.ConfirmationEmail",
+        "password_reset": "vbb.users.emails.PasswordResetEmail",
+        "password_changed_confirmation": "vbb.users.emails.PasswordChangedConfirmationEmail",
+        "username_changed_confirmation": "vbb.users.emails.UsernameChangedConfirmationEmail",
+        "username_reset": "vbb.users.emails.UsernameResetEmail",
+    },
+    "PERMISSIONS": {
+        "activation": ["rest_framework.permissions.AllowAny"],
+        "password_reset": ["rest_framework.permissions.AllowAny"],
+        "password_reset_confirm": ["rest_framework.permissions.AllowAny"],
+        "set_password": ["djoser.permissions.CurrentUserOrAdmin"],
+        "username_reset": ["rest_framework.permissions.AllowAny"],
+        "username_reset_confirm": ["rest_framework.permissions.AllowAny"],
+        "set_username": ["djoser.permissions.CurrentUserOrAdmin"],
+        "user_create": ["rest_framework.permissions.AllowAny"],
+        "user_delete": ["djoser.permissions.CurrentUserOrAdmin"],
+        "user": ["djoser.permissions.CurrentUserOrAdmin"],
+        "user_list": ["djoser.permissions.CurrentUserOrAdmin"],
+        "token_create": ["rest_framework.permissions.AllowAny"],
+        "token_destroy": ["rest_framework.permissions.IsAuthenticated"],
+    },
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
