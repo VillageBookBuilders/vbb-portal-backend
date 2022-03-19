@@ -110,7 +110,9 @@ PASSWORD_HASHERS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -232,7 +234,10 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "%(levelname)s %(asctime)s %(module)s " "%(process)d %(thread)d %(message)s"}
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(module)s "
+            "%(process)d %(thread)d %(message)s"
+        }
     },
     "handlers": {
         "console": {
@@ -304,7 +309,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "VBB API",
     "DESCRIPTION": "Documentation of API endpoints of VBB",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "SERVERS": [
         {"url": "https://127.0.0.1:8000", "description": "Local Development server"},
         {"url": "https://villagebookbuilders.org", "description": "Production server"},
@@ -316,8 +321,10 @@ FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
 # DJOSER Config
 DJOSER = {
-    "PASSWORD_RESET_CONFIRM_URL": FRONTEND_URL + "/api/v1/auth/password/reset/confirm/{uid}/{token}",
-    "USERNAME_RESET_CONFIRM_URL": FRONTEND_URL + "/api/v1/auth/username/reset/confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": FRONTEND_URL
+    + "/api/v1/auth/password/reset/confirm/{uid}/{token}",
+    "USERNAME_RESET_CONFIRM_URL": FRONTEND_URL
+    + "/api/v1/auth/username/reset/confirm/{uid}/{token}",
     "ACTIVATION_URL": FRONTEND_URL + "/api/v1/auth/activate/{uid}/{token}",
     "SEND_ACTIVATION_EMAIL": True,
     "SERIALIZERS": {},

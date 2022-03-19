@@ -108,7 +108,9 @@ class MentorProfile(models.Model):
         NOT_REVIEWED = "Not Reviewed", _("Not Reviewed")
         REJECTED = "Rejected", _("Rejected")
 
-    assigned_library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, null=True)
+    assigned_library = models.ForeignKey(
+        Library, on_delete=models.DO_NOTHING, null=True
+    )
     careers = models.ManyToManyField(Career, related_name="+")
     mentoring_languages = models.ManyToManyField(Language, related_name="+")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True)
@@ -136,7 +138,6 @@ class MentorProfile(models.Model):
     def completed_registration(self) -> bool:
         """
         The completed_registration property.
-
         Combines both model required fields and soft requirements.
         """
         has_user_timezone = self.user.time_zone
