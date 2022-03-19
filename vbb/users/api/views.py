@@ -1,14 +1,26 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin, CreateModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .serializers import UserSerializer
+from vbb.users.api.serializers import UserSerializer, UserRegistrationSerializer
 
 User = get_user_model()
+
+
+class UserRegisterViewset(CreateModelMixin, GenericViewSet):
+    serializer_class = UserRegistrationSerializer
+    queryset = User.objects.all()
+    permission_classes = []
+
+    @action(detail=False)
+    def verify(self, request):
+        if "token" not in request.GET:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
@@ -31,9 +43,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
 @api_view(["GET"])
 def all_users(request: Request) -> Response:
     print(f"protected router {request}")
-    serializer = UserSerializer(
-        User.objects.all(), context={"request": request}, many=True
-    )
+    serializer = UserSerializer(User.objects.all(), context={"request": request}, many=True)
     return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
@@ -43,7 +53,5 @@ def all_users(request: Request) -> Response:
 @permission_classes([])
 def example_none_protected_route(request: Request) -> Response:
     print(f"not protected route {request}")
-    serializer = UserSerializer(
-        User.objects.all(), context={"request": request}, many=True
-    )
+    serializer = UserSerializer(User.objects.all(), context={"request": request}, many=True)
     return Response(status=status.HTTP_200_OK, data=serializer.data)
