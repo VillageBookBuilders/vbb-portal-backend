@@ -86,6 +86,10 @@ create a `.env` file based on `.env_example` (run `cp .env_example .env`)
 - create database: `createdb vbb`
 - run migrations: `python manage.py migrate`
 
+##### Seeding
+
+- languages from [Annexare/Countries repo](from: https://github.com/annexare/Countries)
+
 #### Setup Caddy
 
 [Caddy](https://caddyserver.com/docs/getting-started) is the proxy service we use to connect the backend app and the frontend app and allows us to serve the same service as a single domain rather than sub domains
