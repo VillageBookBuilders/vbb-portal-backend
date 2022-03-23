@@ -90,6 +90,9 @@ create a `.env` file based on `.env_example` (run `cp .env_example .env`)
 ##### Seeding
 
 - languages from [Annexare/Countries repo](from: https://github.com/annexare/Countries)
+  - run `python manage.py shell`
+    - `from vbb.utils.seeds.seed_languages import seed_languages`
+    - `seed_languages()`
 
 #### Setup Caddy
 
