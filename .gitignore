@@ -277,3 +277,4 @@ vbb/media/
 .env
 .envs/*
 !.envs/.local/
+./dev_notes.md
