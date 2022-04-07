@@ -11,9 +11,7 @@ else:
 
 router.register("users", UserViewSet)
 
-
 app_name = "api"
-
 urlpatterns = [
     path("", include(router.urls)),
     path("does-this-work/", all_users),
