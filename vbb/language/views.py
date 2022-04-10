@@ -4,7 +4,7 @@ from vbb.language.models import Language
 from vbb.language.serializers import LanguageSerializer
 
 
-class LanguageViewSet(viewsets.ModelViewSet):
+class LanguageViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Language Views from Rest Framework
     """
