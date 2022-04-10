@@ -19,5 +19,4 @@ class MentorProfileViewSet(APIView):
         Register Mentor form
         """
         user = request.user
-        breakpoint()
         return Response(status=status.HTTP_201_CREATED)

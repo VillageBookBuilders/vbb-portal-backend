@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from vbb.subjects.models import Subject
+
+admin.sites.site.register(Subject)

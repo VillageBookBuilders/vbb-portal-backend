@@ -4,7 +4,7 @@ from vbb.subjects.models import Subject
 from vbb.subjects.serializers import SubjectSerializer
 
 
-class SubjectViewSet(viewsets.ModelViewSet):
+class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Subject Views from Rest Framework
     """
