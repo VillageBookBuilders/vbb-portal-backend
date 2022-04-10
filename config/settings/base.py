@@ -74,8 +74,14 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "vbb.users",
     # Your stuff: custom apps go here
+    "vbb.careers",
+    "vbb.language",
+    "vbb.libraries",
+    "vbb.profiles",
+    "vbb.organizations",
+    "vbb.subjects",
+    "vbb.users",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -90,6 +96,8 @@ MIGRATION_MODULES = {"sites": "vbb.contrib.sites.migrations"}
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
+    "users.backends.EmailBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
