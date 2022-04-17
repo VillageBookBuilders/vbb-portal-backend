@@ -1,9 +1,10 @@
-from rest_framework.request import Request
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import permissions, status
-from vbb.utils.custom_csrf import CsrfHTTPOnlySessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from vbb.utils.custom_csrf import CsrfHTTPOnlySessionAuthentication
 
 
 class MentorProfileViewSet(APIView):

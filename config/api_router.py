@@ -1,16 +1,12 @@
 from django.conf import settings
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
+
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
 from vbb.profiles.views import MentorProfileViewSet
 from vbb.subjects.views import SubjectViewSet
-
-from vbb.users.api.views import (
-    UserViewSet,
-    example_protected_route,
-    login_user,
-)
+from vbb.users.api.views import UserViewSet, example_protected_route, login_user
 
 if settings.DEBUG:
     router = DefaultRouter()

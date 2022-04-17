@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, get_user_model, login
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import (
     action,
     api_view,
@@ -8,11 +9,10 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 from vbb.users.api.serializers import UserSerializer
 

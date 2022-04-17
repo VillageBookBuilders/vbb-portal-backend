@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-
 TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
 

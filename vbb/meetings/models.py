@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 import pytz
 from django.db import models
 from rest_framework.exceptions import ValidationError
-from vbb.utils.models.base import BaseUUIDModel
 
 from vbb.utils.models.base import BaseUUIDModel
 
@@ -45,17 +44,25 @@ class Program(BaseUUIDModel):
     # types include excellent, good, poor, gov/low-fee, special status
     latitude = models.DecimalField(max_digits=8, decimal_places=3)
     longitude = models.DecimalField(max_digits=8, decimal_places=3)
-    program_director = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True)
+    program_director = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, null=True
+    )
     # headmasters = models.ManyToManyField("users.User", through="HeadmastersProgramAssociation")
     # teachers = models.ManyToManyField("users.User", through="TeachersProgramAssociation")
     # managers = models.ManyToManyField("users.User", through="ManagersProgramAssociation")
     # todo add access control for 54-56
-    program_inception_date = models.DateTimeField(null=True, blank=True)  # offical start date
+    program_inception_date = models.DateTimeField(
+        null=True, blank=True
+    )  # offical start date
     program_renewal_date = models.DateTimeField(
         null=True, blank=True
     )  # yearly program renual before trips should be made
-    required_languages = models.CharField(max_length=254, choices=LanguageChoices, default=None, null=True)
-    secondary_languages = models.CharField(max_length=254, choices=LanguageChoices, default=None, null=True)
+    required_languages = models.CharField(
+        max_length=254, choices=LanguageChoices, default=None, null=True
+    )
+    secondary_languages = models.CharField(
+        max_length=254, choices=LanguageChoices, default=None, null=True
+    )
 
     # calender key for scheduling
     googe_calendar_id = models.CharField(max_length=254, null=True)
@@ -69,10 +76,18 @@ class Program(BaseUUIDModel):
     parents_group = models.CharField(max_length=254, null=True, blank=True)
 
     # program specific resources
-    notion_url = models.URLField(max_length=500, null=True, blank=True, help_text="url link")
-    googleDrive_url = models.URLField(max_length=500, null=True, blank=True, help_text="url link")
-    googleClassroom_url = models.URLField(max_length=500, null=True, blank=True, help_text="url link")
-    workplace_resources = models.URLField(max_length=500, null=True, blank=True, help_text="url link")
+    notion_url = models.URLField(
+        max_length=500, null=True, blank=True, help_text="url link"
+    )
+    googleDrive_url = models.URLField(
+        max_length=500, null=True, blank=True, help_text="url link"
+    )
+    googleClassroom_url = models.URLField(
+        max_length=500, null=True, blank=True, help_text="url link"
+    )
+    workplace_resources = models.URLField(
+        max_length=500, null=True, blank=True, help_text="url link"
+    )
     program_googlePhotos = models.URLField(
         max_length=500,
         null=True,
@@ -132,7 +147,9 @@ class Computer(BaseUUIDModel):
     """
 
     def __str__(self):
-        return f"{str(self.program)} {str(self.computer_number)} + ({self.computer_email})"
+        return (
+            f"{str(self.program)} {str(self.computer_number)} + ({self.computer_email})"
+        )
 
 
 class Slot(BaseUUIDModel):
@@ -149,7 +166,9 @@ class Slot(BaseUUIDModel):
     """
 
     # Default Min date not used as this can cause issues in some databases and systems
-    DEAFULT_INIT_DATE = datetime.fromisoformat("2000-01-03 00:00:00")  # First Monday of the year 2000
+    DEAFULT_INIT_DATE = datetime.fromisoformat(
+        "2000-01-03 00:00:00"
+    )  # First Monday of the year 2000
     # DO NOT CHANGE THE DEFAULT INIT DATE | USED FOR EASE OF USE
     slot_number = models.IntegerField(null=True, blank=True)
     # ? should we have a way to ID the slots across computers or programs? like an index to help admins find slots?
@@ -161,23 +180,35 @@ class Slot(BaseUUIDModel):
         null=True,
     )
     language = models.CharField(max_length=254, choices=LanguageChoices)
-    schedule_start = models.DateTimeField(null=False, blank=False)  # All Date Times in UTC
-    schedule_end = models.DateTimeField(null=False, blank=False)  # All Date Times are in UTC
+    schedule_start = models.DateTimeField(
+        null=False, blank=False
+    )  # All Date Times in UTC
+    schedule_end = models.DateTimeField(
+        null=False, blank=False
+    )  # All Date Times are in UTC
     start_date = models.DateField(auto_now=True)  # When the slot becomes active
     end_date = models.DateField(null=True, blank=True)  # if and when the slot ends
     event_id = models.CharField(max_length=60, null=True, blank=True)
     meeting_link = models.CharField(max_length=60, null=True, blank=True)
     max_students = models.IntegerField(default=1)
-    assigned_students = models.IntegerField(default=0)  # Storing to avoid recalculation each time
+    assigned_students = models.IntegerField(
+        default=0
+    )  # Storing to avoid recalculation each time
     is_mentor_assigned = models.BooleanField(default=False)
     is_student_assigned = models.BooleanField(default=False)
 
-    students = models.ManyToManyField("users.User", through="StudentSlotAssociation", related_name="slot_mentors")
-    mentors = models.ManyToManyField("users.User", through="MentorSlotAssociation", related_name="slot_students")
+    students = models.ManyToManyField(
+        "users.User", through="StudentSlotAssociation", related_name="slot_mentors"
+    )
+    mentors = models.ManyToManyField(
+        "users.User", through="MentorSlotAssociation", related_name="slot_students"
+    )
 
     @staticmethod
     def get_slot_time(day, hour, minute):
-        slot_time = Slot.DEAFULT_INIT_DATE + timedelta(days=int(day), hours=int(hour), minutes=int(minute))
+        slot_time = Slot.DEAFULT_INIT_DATE + timedelta(
+            days=int(day), hours=int(hour), minutes=int(minute)
+        )
         return slot_time.replace(tzinfo=timezone.utc)
 
     def save(self, *args, **kwargs):
@@ -221,7 +252,9 @@ class StudentSlotAssociation(BaseUUIDModel):
         null=True,
         related_name="student_slot",
     )
-    slot = models.ForeignKey(Slot, on_delete=models.SET_NULL, null=True, related_name="slot_student")
+    slot = models.ForeignKey(
+        Slot, on_delete=models.SET_NULL, null=True, related_name="slot_student"
+    )
     priority = models.IntegerField(default=0)  # 0 is the highest priority
 
     class Meta:
@@ -239,10 +272,16 @@ class MentorSlotAssociation(BaseUUIDModel):
     This connects the student user object with a Slot Object
     """
 
-    mentor = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, related_name="mentor_slot")
-    slot = models.ForeignKey(Slot, on_delete=models.SET_NULL, null=True, related_name="slot_mentor")
+    mentor = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, null=True, related_name="mentor_slot"
+    )
+    slot = models.ForeignKey(
+        Slot, on_delete=models.SET_NULL, null=True, related_name="slot_mentor"
+    )
     priority = models.IntegerField(default=0)  # 0 is the highest priority
-    is_confirmed = models.BooleanField(default=False)  # This is only editable by the program director or above
+    is_confirmed = models.BooleanField(
+        default=False
+    )  # This is only editable by the program director or above
 
     class Meta:
         constraints = [
@@ -260,15 +299,21 @@ class Session(BaseUUIDModel):
     An Asyncronous task will populate the required sessions from the SessionRule
     """
 
-    slot = models.ForeignKey(Slot, on_delete=models.SET_NULL, null=True)  # Represents the Connected Slot
+    slot = models.ForeignKey(
+        Slot, on_delete=models.SET_NULL, null=True
+    )  # Represents the Connected Slot
 
     computer = models.ForeignKey(Computer, on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField()  # All Date Times in UTC
     end = models.DateTimeField()  # All Date Times in UTC
     students = models.ManyToManyField(
-        "users.User", through="StudentSessionAssociation", related_name="session_students"
+        "users.User",
+        through="StudentSessionAssociation",
+        related_name="session_students",
     )
-    mentors = models.ManyToManyField("users.User", through="MentorSessionAssociation", related_name="session_mentors")
+    mentors = models.ManyToManyField(
+        "users.User", through="MentorSessionAssociation", related_name="session_mentors"
+    )
 
     isHappening = models.BooleanField(default=False)
 
@@ -303,7 +348,9 @@ class StudentSessionAssociation(BaseUUIDModel):
         null=True,
         related_name="student_session",
     )
-    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True, related_name="session_student")
+    session = models.ForeignKey(
+        Session, on_delete=models.SET_NULL, null=True, related_name="session_student"
+    )
     attended = models.BooleanField(default=False)
     mentoring_notes = models.TextField(default=None, null=True, blank=True)
     # todo subject/class field and a computer field stating which computer the session is part of
@@ -329,7 +376,9 @@ class MentorSessionAssociation(BaseUUIDModel):
         null=True,
         related_name="mentor_session",
     )
-    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True, related_name="session_mentor")
+    session = models.ForeignKey(
+        Session, on_delete=models.SET_NULL, null=True, related_name="session_mentor"
+    )
     attended = models.BooleanField(default=False)
     mentoring_notes = models.TextField(default=None, null=True, blank=True)
     # todo subject/class field and a computer field stating which computer the session is part of
