@@ -4,10 +4,11 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
+from vbb.meetings.api.viewsets.computer import ComputerViewSet
 from vbb.meetings.api.viewsets.program import ProgramViewset
 from vbb.profiles.views import MentorProfileViewSet
 from vbb.subjects.views import SubjectViewSet
-from vbb.users.api.views import UserViewSet, example_protected_route, login_user
+from vbb.users.api.views import UserViewSet, login_user
 
 if settings.DEBUG:
     router = DefaultRouter()
@@ -20,9 +21,10 @@ router.register("careers", CareerViewSet)
 router.register("subjects", SubjectViewSet)
 
 # Programs
-router.register("program", ProgramViewset)
+router.register("programs", ProgramViewset)
 
 # Computers
+router.register("computers", ComputerViewSet)
 
 # Slots
 
