@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 
-from meetings.models import Program
+from vbb.meetings.models import Program
 from vbb.meetings.api.serializers.program import ProgramSerializer
 
 
