@@ -1,6 +1,5 @@
 from vbb.careers.models import Career
 
-
 careers = [
     {
         "name": "Architecture and Engineering",
