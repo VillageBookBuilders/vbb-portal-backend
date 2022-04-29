@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
+
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
-from vbb.profiles.views import MentorProfileViewSet
+from vbb.profiles.views import MentorProfileViewSet, StudentProfileViewSet
 from vbb.subjects.views import SubjectViewSet
-
 from vbb.users.api.views import (
+    TimezoneViewSet,
     UserViewSet,
     example_protected_route,
     login_user,
@@ -31,4 +32,9 @@ urlpatterns = [
         "mentor-registration/",
         MentorProfileViewSet().as_view(),
     ),
+    path(
+        "student-registration/",
+        StudentProfileViewSet().as_view(),
+    ),
+    path("timezones/", TimezoneViewSet().as_view()),
 ]

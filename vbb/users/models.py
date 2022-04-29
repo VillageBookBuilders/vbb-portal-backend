@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-
 TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
 
@@ -22,6 +21,11 @@ class User(AbstractUser):
     is_librarian = models.BooleanField(default=False)
     is_mentor = models.BooleanField(default=False)
     is_student = models.BooleanField(default=False)
+    date_of_birth = models.DateField(null=True)
 
     def __str__(self):
-        return self.email
+        try:
+            user_string = self.email
+        except AttributeError:
+            user_string = self.username
+        return user_string

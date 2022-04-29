@@ -10,9 +10,9 @@ class Organization(models.Model):
     Typically refers to a corporate partner
     """
 
-    libary = models.OneToOneField(Library, on_delete=models.DO_NOTHING, null=True)
+    library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True)
 
-    email_domain = models.CharField(max_length=255, unique=True)
+    corporate_code = models.CharField(max_length=255, unique=True)
     is_corporate_org = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
 

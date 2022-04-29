@@ -9,5 +9,7 @@ class LanguageViewSet(viewsets.ModelViewSet):
     Language Views from Rest Framework
     """
 
+    authentication_classes = ()
+    permission_classes = []
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer

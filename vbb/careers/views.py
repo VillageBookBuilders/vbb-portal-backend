@@ -9,5 +9,7 @@ class CareerViewSet(viewsets.ModelViewSet):
     Career Views from Rest Framework
     """
 
+    authentication_classes = ()
+    permission_classes = []
     queryset = Career.objects.all()
     serializer_class = CareerSerializer
