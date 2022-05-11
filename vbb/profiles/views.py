@@ -1,7 +1,7 @@
 import re
-import jwt
 from datetime import datetime
 
+import jwt
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
@@ -47,30 +47,25 @@ class MentorSignUp(APIView):
             user.set_password(password)
             user.save()
 
+            link = settings.EMAIL_LINK
             # Still needs to send email
             if user:
                 token = jwt.encode(
                     {"user_id": user.id}, settings.SECRET_KEY, algorithm="HS256"
                 )
-                link = settings.EMAIL_LINK + f"?token={token}"
-                print(link)
-            try:
-                # amazon simple email service
-                # send_mail("subject", "message", "from_email", ["to_list"])
-                body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
-                send_mail(
-                    "Village Book Builders - Please confirm your email",
-                    body,
-                    "test@test.com",
-                    [user.email],
-                )
-            except:
-                return Response(
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    data={"message": "Error sending email"},
-                )
-
+                link = link + f"?token={token}"
+                print(f"email link: {link}")
+            # amazon simple email service
+            # send_mail("subject", "message", "from_email", ["to_list"])
+            body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
+            send_mail(
+                "Village Book Builders - Please confirm your email",
+                body,
+                "test@test.com",
+                [user.email],
+            )
             return Response(status=status.HTTP_201_CREATED)
+
         except IntegrityError:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
