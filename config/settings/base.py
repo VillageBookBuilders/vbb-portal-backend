@@ -362,3 +362,9 @@ DJOSER = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+EMAIL_USE_TLS = True
+EMAIL_HOST = env("EMAIL_HOST", default="")
+EMAIL_PORT = 587
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_LINK = FRONTEND_URL + "/api/v1/mentor-email-confirmation/"
