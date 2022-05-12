@@ -4,7 +4,12 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
-from vbb.profiles.views import MentorProfileViewSet, StudentProfileViewSet
+from vbb.profiles.views import (
+    MentorConfirmationEmailViewSet,
+    MentorProfileViewSet,
+    MentorSignUp,
+    StudentProfileViewSet,
+)
 from vbb.subjects.views import SubjectViewSet
 from vbb.users.api.views import (
     TimezoneViewSet,
@@ -37,4 +42,6 @@ urlpatterns = [
         StudentProfileViewSet().as_view(),
     ),
     path("timezones/", TimezoneViewSet().as_view()),
+    path("mentor-sign-up/", MentorSignUp().as_view()),
+    path("mentor-email-confirmation/", MentorConfirmationEmailViewSet().as_view()),
 ]

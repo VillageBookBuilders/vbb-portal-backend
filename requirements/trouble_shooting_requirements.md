@@ -88,7 +88,6 @@ django-crispy-forms==1.14.0
 django-stubs-ext==0.4.0
 django-templated-mail==1.1.1
 django-timezone-field==4.2.3
-djangorestframework-simplejwt==4.8.0
 djoser==2.1.0
 docutils==0.17.1
 executing==0.8.3

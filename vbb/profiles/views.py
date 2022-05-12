@@ -1,7 +1,12 @@
+import re
 from datetime import datetime
 
+import jwt
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.http.response import HttpResponseRedirect
 from rest_framework import permissions, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.request import Request
@@ -15,6 +20,97 @@ from vbb.users.admin import User
 from vbb.users.api.serializers import UserSerializer
 from vbb.users.models import TIMEZONES
 from vbb.utils.custom_csrf import CsrfHTTPOnlySessionAuthentication
+
+
+class MentorSignUp(APIView):
+    """Public Mentor Sign Up view"""
+
+    authentication_classes = ()
+    permission_classes = []
+
+    def post(self, request: Request) -> Response:
+        """
+        Manages Mentor Sign Up
+
+        data example:{
+            "email": "will@test.com",
+            "name": "Test Mentor Signup",
+            "password": ""
+            }
+        """
+        email = request.data.get("email")
+        name = request.data.get("name")
+        password = request.data.get("password")
+
+        try:
+            user = User.objects.create(name=name, email=email)
+            user.set_password(password)
+            user.save()
+
+            link = settings.EMAIL_LINK
+            # Still needs to send email
+            if user:
+                token = jwt.encode(
+                    {"user_id": user.id}, settings.SECRET_KEY, algorithm="HS256"
+                )
+                link = link + f"?token={token}"
+                print(f"email link: {link}")
+            # amazon simple email service
+            # send_mail("subject", "message", "from_email", ["to_list"])
+            body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
+            send_mail(
+                "Village Book Builders - Please confirm your email",
+                body,
+                "test@test.com",
+                [user.email],
+            )
+            return Response(status=status.HTTP_201_CREATED)
+
+        except IntegrityError:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "Email is already taken"},
+            )
+
+
+class MentorConfirmationEmailViewSet(APIView):
+    authentication_classes = ()
+    permission_classes = []
+
+    def get(self, request: Request):
+        """
+        Updates user.is_email_verified to true if JWT can be decoded
+
+        Returns:
+            Redirect to base_url + 'login/' on success
+            HTTP_403_FORBIDDEN,
+            HTTP_500_INTERNAL_SERVER_ERROR if the root uri
+        """
+        token = request.query_params.get("token")
+        if not token:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        decoded_token = jwt.decode(token, key=settings.SECRET_KEY, algorithms=["HS256"])
+        try:
+            user = User.objects.get(id=decoded_token.get("user_id"))
+            user.is_email_verified = True
+            user.save()
+
+            full_url = request.build_absolute_uri()
+            try:
+                # regex
+                # 'http://vbb.local/api/v1/mentor-sign-up/' -> ['http://vbb.local/']
+                base_url = re.findall("^.*?(?=api)", full_url)[0]
+                redirect_url = base_url + "login"
+                return HttpResponseRedirect(redirect_to=redirect_url)
+            except IndexError:
+                # regex failed to pull the root uri
+                return Response(
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    data={"message": "Error parsing root uri"},
+                )
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class MentorProfileViewSet(APIView):
