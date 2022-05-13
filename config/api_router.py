@@ -13,10 +13,10 @@ from vbb.profiles.views import (
 )
 from vbb.subjects.views import SubjectViewSet
 from vbb.users.api.views import (
+    LoginView,
     TimezoneViewSet,
     UserViewSet,
     example_protected_route,
-    login_user,
 )
 
 if settings.DEBUG:
@@ -33,7 +33,7 @@ router.register("libraries", LibraryViews)
 app_name = "api"
 urlpatterns = [
     path("", include(router.urls)),
-    path("login/", login_user),
+    path("login/", LoginView().as_view()),
     path("this/", example_protected_route),
     path(
         "mentor-registration/",
