@@ -76,9 +76,7 @@ class StudentProfile(models.Model):
     Student profile for a user
     """
 
-    assigned_library = models.OneToOneField(
-        Library, on_delete=models.SET_NULL, null=True
-    )
+    assigned_library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True)
     careers_of_interest = models.ManyToManyField(Career, related_name="+")
     mentoring_languages = models.ManyToManyField(Language, related_name="+")
     subjects = models.ManyToManyField(Subject, related_name="+")

@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
+from vbb.libraries.views import LibraryViews
 from vbb.profiles.views import (
     MentorConfirmationEmailViewSet,
     MentorProfileViewSet,
@@ -12,10 +13,10 @@ from vbb.profiles.views import (
 )
 from vbb.subjects.views import SubjectViewSet
 from vbb.users.api.views import (
+    LoginView,
     TimezoneViewSet,
     UserViewSet,
     example_protected_route,
-    login_user,
 )
 
 if settings.DEBUG:
@@ -27,11 +28,12 @@ router.register("users", UserViewSet)
 router.register("languages", LanguageViewSet)
 router.register("careers", CareerViewSet)
 router.register("subjects", SubjectViewSet)
+router.register("libraries", LibraryViews)
 
 app_name = "api"
 urlpatterns = [
     path("", include(router.urls)),
-    path("login/", login_user),
+    path("login/", LoginView().as_view()),
     path("this/", example_protected_route),
     path(
         "mentor-registration/",
