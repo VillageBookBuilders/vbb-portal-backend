@@ -13,14 +13,28 @@ class User(AbstractUser):
     check forms.SignupForm and forms.SocialSignupForms accordingly.
     """
 
-    email = models.EmailField(max_length=255, unique=True)
+    # username is redfined because we need to allow for a null value
+    # Mentores will not have one. As defined by AbstractUser it doesn't
+    # allow for it to be empty and unique
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        null=True,
+        blank=True,
+        unique=True,
+    )
+    email = models.EmailField(max_length=255, unique=True, null=True, blank=True)
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
     # time_zone is a softly required field. Not required at registration
     # but required to complete registration for all user profiles
     time_zone = models.CharField(max_length=255, null=True, choices=TIMEZONES)
+    is_email_verified = models.BooleanField(default=False)
     is_librarian = models.BooleanField(default=False)
     is_mentor = models.BooleanField(default=False)
     is_student = models.BooleanField(default=False)
+    date_of_birth = models.DateField(null=True)
 
     def __str__(self):
-        return self.email
+        if self.email:
+            return self.email
+        return self.username

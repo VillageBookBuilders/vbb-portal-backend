@@ -1,4 +1,4 @@
-from django.contrib import admin
+# from django.contrib import admin
 
 from vbb.language.models import Language
 
