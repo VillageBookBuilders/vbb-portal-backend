@@ -26,7 +26,7 @@ class LibraryWithComputersSerializer(serializers.ModelSerializer):
     announcements = serializers.SerializerMethodField()
 
     def get_announcements(self, library):
-        AnnouncementSerializer(library.announcement_set.all(), many=True)
+        return AnnouncementSerializer(library.announcement_set.all(), many=True).data
 
     class Meta:
         model = Library

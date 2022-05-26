@@ -1,4 +1,4 @@
-# from django.contrib import admin
+from django.contrib import admin
 
 from vbb.careers.models import Career
 
