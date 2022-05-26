@@ -57,7 +57,7 @@ class LoginView(APIView):
         body = request.data.get("data")
         username = body.get("username")
         password = body.get("password")
-        email = request.data.get("email")
+        email = body.get("email")
         user = None
 
         # authenticate the user either through username or email
