@@ -49,4 +49,5 @@ class AdminLibraryViews(APIView):
 
     def get(self, request: Request) -> Response:
         """Returns a list of all Libraries including codes"""
+        print(request)
         return Response(data="Not implemented yet")
