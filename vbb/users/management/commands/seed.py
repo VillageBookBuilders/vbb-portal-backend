@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from vbb.utils.seeds.seed import seed
 
@@ -8,4 +8,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         seed()
-        print("Completed Adding Seed Data.")
+        self.stdout.write("Completed Adding Seed Data.")

@@ -7,9 +7,11 @@ from rest_framework.exceptions import ValidationError
 
 from vbb.utils.models.base import BaseUUIDModel
 
+
 TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
 
+# NOTE this should be a relationship to the Language Model list
 class LanguageEnum(enum.Enum):
     ENGLISH = "ENGLISH"
     SPANISH = "SPANISH"
@@ -18,9 +20,12 @@ class LanguageEnum(enum.Enum):
     HINDI = "HINDI"
 
 
+# NOTE this should be a relationship to the Language Model list
 LanguageChoices = [(e.value, e.name) for e in LanguageEnum]
 
 
+# NOTE The concept of a Program has been replaced by Library.
+# This model fields may need to be transferred to the Library or deleted entirely
 class Program(BaseUUIDModel):
     """
     This model represents a VBB village mentoring program
@@ -57,6 +62,8 @@ class Program(BaseUUIDModel):
     program_renewal_date = models.DateTimeField(
         null=True, blank=True
     )  # yearly program renual before trips should be made
+    # NOTE this should likely be mentoring lanaguage although this
+    # responsability has been moved to the student and then mentor languages
     required_languages = models.CharField(
         max_length=254, choices=LanguageChoices, default=None, null=True
     )
@@ -121,6 +128,7 @@ class Computer(BaseUUIDModel):
     This Model Represents a Computer in a VBB Mentor Program that can host mentoring slots
     """
 
+    # NOTE 'Program' has been replaced by 'Library'
     program = models.ForeignKey(
         Program,
         on_delete=models.PROTECT,
@@ -179,6 +187,7 @@ class Slot(BaseUUIDModel):
         on_delete=models.PROTECT,
         null=True,
     )
+    # NOTE Language is now part of the User object.
     language = models.CharField(max_length=254, choices=LanguageChoices)
     schedule_start = models.DateTimeField(
         null=False, blank=False
@@ -200,6 +209,8 @@ class Slot(BaseUUIDModel):
     students = models.ManyToManyField(
         "users.User", through="StudentSlotAssociation", related_name="slot_mentors"
     )
+    # NOTE current understanding is that a SLOT can only have one mentor and one
+    # student at any given time
     mentors = models.ManyToManyField(
         "users.User", through="MentorSlotAssociation", related_name="slot_students"
     )
