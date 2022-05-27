@@ -96,19 +96,23 @@ run `python manage.py seed` to add seeds
 
   - All Passwords: `123`
   - Students
+    ```
     "username": "test_student1",
     "username": "test_student2",
     "username": "test_student3",
     "username": "test_student4",
     "username": "test_student5",
     "username": "test_student6",
+    ```
   - Mentors
+    ```
     "email": "test_mentor1@test.com",
     "email": "test_mentor2@test.com",
     "email": "test_mentor3@test.com",
     "email": "test_mentor4@test.com",
     "email": "test_mentor5@test.com",
     "email": "test_mentor6@test.com",
+    ```
 
   languages from [Annexare/Countries repo](from: https://github.com/annexare/Countries)
 
