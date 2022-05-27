@@ -4,6 +4,6 @@ from vbb.meetings.api.serializers.sessions import SessionSerializer
 from vbb.meetings.models import Session
 
 
-class SlotViewSet(ModelViewSet):
+class SessionViewset(ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
