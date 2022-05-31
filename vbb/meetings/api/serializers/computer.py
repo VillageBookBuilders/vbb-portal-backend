@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
-from vbb.meetings.api.serializers.program import ProgramSerializer
 
+from vbb.meetings.api.serializers.program import ProgramSerializer
 from vbb.meetings.models import Computer, Program
 
 

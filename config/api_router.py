@@ -7,6 +7,8 @@ from vbb.language.views import LanguageViewSet
 from vbb.libraries.views import LibraryViews
 from vbb.meetings.api.viewsets.computer import ComputerViewSet
 from vbb.meetings.api.viewsets.program import ProgramViewset
+from vbb.meetings.api.viewsets.sessions import SessionViewset
+from vbb.meetings.api.viewsets.slot import SlotViewSet
 from vbb.profiles.views import (
     MentorConfirmationEmailViewSet,
     MentorProfileViewSet,
@@ -34,8 +36,10 @@ router.register("programs", ProgramViewset)
 router.register("computers", ComputerViewSet)
 
 # Slots
+router.register("slots", SlotViewSet)
 
 # Sessions
+router.register("sessions", SessionViewset)
 
 app_name = "api"
 urlpatterns = [
