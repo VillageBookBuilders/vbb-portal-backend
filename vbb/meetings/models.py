@@ -330,7 +330,8 @@ class Session(BaseUUIDModel):
     # @varun we need to know which user can edit which fields
 
     agenda = models.TextField(default=None, null=True, blank=True)
-    # figure out the ideal mentor mentee format and use of notion + journaling, if mentoring was a therapy intervetion, what are different formats? how does that play into the resources we are using?
+    # figure out the ideal mentor mentee format and use of notion + journaling, if mentoring was a
+    # therapy intervetion, what are different formats? how does that play into the resources we are using?
 
     def save(self, *args, **kwargs):
         # TODO Need to ensure that only one session exists per day
@@ -356,10 +357,14 @@ class StudentSessionAssociation(BaseUUIDModel):
     # todo subject/class field and a computer field stating which computer the session is part of
 
     delay_notes = models.BooleanField(default=False)
-    # warnings, risks, complexities etc. make this a type variable? issue_warning  need to figure out user workflow + story for session warning + communication @sarthak
-    # if its easy for people to communicate over email or slack, there should be a simple way for mentors & mentees to communicate wether or not they are coming, the answer could be attendance, phones, parents, librian, idk but people should not need to wait
-    # alert 30 minutes if mentee does not show, for mentors to leave, if problem repeats for 3 times in a row with power/internet/issues, then alert libraian and figure out a way to keep mentor engaged in the process
-    # sarthak, we need to figure this out soon
+    # warnings, risks, complexities etc. make this a type variable? issue_warning
+    # need to figure out user workflow + story for session warning + communication @sarthak
+    # if its easy for people to communicate over email or slack, there should be a simple way
+    # for mentors & mentees to communicate wether or not they are coming, the answer could be attendance,
+    # phones, parents, librian, idk but people should not need to wait
+    # alert 30 minutes if mentee does not show, for mentors to leave, if problem repeats for 3 times in
+    # a row with power/internet/issues, then alert libraian and figure out a way to keep mentor engaged
+    # in the process sarthak, we need to figure this out soon
     warnings = models.TextField(default=None, null=True, blank=True)
     issues = models.TextField(default=None, null=True, blank=True)
     feedback = models.TextField(default=None, null=True, blank=True)
@@ -384,10 +389,14 @@ class MentorSessionAssociation(BaseUUIDModel):
     # todo subject/class field and a computer field stating which computer the session is part of
 
     delay_notes = models.BooleanField(default=False)
-    # warnings, risks, complexities etc. make this a type variable? issue_warning  need to figure out user workflow + story for session warning + communication @sarthak
-    # if its easy for people to communicate over email or slack, there should be a simple way for mentors & mentees to communicate wether or not they are coming, the answer could be attendance, phones, parents, librian, idk but people should not need to wait
-    # alert 30 minutes if mentee does not show, for mentors to leave, if problem repeats for 3 times in a row with power/internet/issues, then alert libraian and figure out a way to keep mentor engaged in the process
-    # sarthak, we need to figure this out soon
+    # warnings, risks, complexities etc. make this a type variable? issue_warning
+    # need to figure out user workflow + story for session warning + communication @sarthak
+    # if its easy for people to communicate over email or slack, there should be a simple
+    # way for mentors & mentees to communicate wether or not they are coming, the answer
+    # could be attendance, phones, parents, librian, idk but people should not need to wait
+    # alert 30 minutes if mentee does not show, for mentors to leave, if problem repeats for
+    # 3 times in a row with power/internet/issues, then alert libraian and figure out a way
+    # to keep mentor engaged in the process sarthak, we need to figure this out soon
     warnings = models.TextField(default=None, null=True, blank=True)
     issues = models.TextField(default=None, null=True, blank=True)
     feedback = models.TextField(default=None, null=True, blank=True)

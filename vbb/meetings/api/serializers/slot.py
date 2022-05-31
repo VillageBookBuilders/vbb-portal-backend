@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-from django.forms import ValidationError
-from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import (
     IntegerField,
     ModelSerializer,
