@@ -1,10 +1,15 @@
 from datetime import timedelta
-from django.forms import ValidationError
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, IntegerField
-from vbb.meetings.api.serializers.computer import ComputerSerializer
 
-from vbb.meetings.models import Slot, Computer
+from django.forms import ValidationError
 from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import (
+    IntegerField,
+    ModelSerializer,
+    PrimaryKeyRelatedField,
+)
+
+from vbb.meetings.api.serializers.computer import ComputerSerializer
+from vbb.meetings.models import Computer, Slot
 
 
 class SlotSerializer(ModelSerializer):
@@ -21,10 +26,14 @@ class SlotSerializer(ModelSerializer):
 
     def validate(self, attrs):
         self.start_time = Slot.DEAFULT_INIT_DATE + timedelta(
-            days=attrs.pop("start_day_of_the_week"), hours=attrs.pop("start_hour"), minutes=attrs.pop("start_minute")
+            days=attrs.pop("start_day_of_the_week"),
+            hours=attrs.pop("start_hour"),
+            minutes=attrs.pop("start_minute"),
         )
         self.end_time = Slot.DEAFULT_INIT_DATE + timedelta(
-            days=attrs.pop("end_day_of_the_week"), hours=attrs.pop("end_hour"), minutes=attrs.pop("end_minute")
+            days=attrs.pop("end_day_of_the_week"),
+            hours=attrs.pop("end_hour"),
+            minutes=attrs.pop("end_minute"),
         )
         return super().validate(attrs)
 

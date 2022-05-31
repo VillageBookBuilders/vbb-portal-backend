@@ -1,8 +1,8 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+
 from vbb.meetings.api.serializers.computer import ComputerSerializer
 from vbb.meetings.api.serializers.slot import SlotSerializer
-
-from vbb.meetings.models import Session,Slot,Computer
+from vbb.meetings.models import Computer, Session, Slot
 
 
 class SessionSerializer(ModelSerializer):

@@ -36,10 +36,10 @@ router.register("programs", ProgramViewset)
 router.register("computers", ComputerViewSet)
 
 # Slots
-router.register("slots" , SlotViewSet)
+router.register("slots", SlotViewSet)
 
 # Sessions
-router.register("sessions",SessionViewset)
+router.register("sessions", SessionViewset)
 
 app_name = "api"
 urlpatterns = [
