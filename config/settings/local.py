@@ -14,6 +14,13 @@ SECRET_KEY = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "localhost.vbb.org", "vbb.local"]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://portal.vbb.org",
+    "https://portal.vbb.org",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 # CACHES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches

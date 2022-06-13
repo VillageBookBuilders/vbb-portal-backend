@@ -4,7 +4,7 @@ from vbb.careers.models import Career
 from vbb.careers.serializers import CareerSerializer
 
 
-class CareerViewSet(viewsets.ReadOnlyModelViewSet):
+class CareerViewSet(viewsets.ModelViewSet):
     """
     Career Views from Rest Framework
     """

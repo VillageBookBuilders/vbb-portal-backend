@@ -1,5 +1,5 @@
 from django.contrib import admin
+from .models import Organization
 
-from vbb.organizations.models import Organization
-
-admin.sites.site.register(Organization)
+# Register your models here.
+admin.site.register(Organization)

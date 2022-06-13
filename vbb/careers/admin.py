@@ -1,5 +1,5 @@
 from django.contrib import admin
+from .models import Career
 
-from vbb.careers.models import Career
-
-admin.sites.site.register(Career)
+# Register your models here.
+admin.site.register(Career)

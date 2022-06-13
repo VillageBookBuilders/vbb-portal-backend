@@ -1,5 +1,5 @@
 from django.contrib import admin
+from .models import Language
 
-from vbb.language.models import Language
-
-admin.sites.site.register(Language)
+# Register your models here.
+admin.site.register(Language)

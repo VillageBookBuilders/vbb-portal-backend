@@ -1,6 +1,7 @@
 from django.contrib import admin
+from .models import MentorProfile, LibrarianProfile, StudentProfile
 
-from vbb.profiles.models import MentorProfile, StudentProfile
-
-admin.sites.site.register(StudentProfile)
-admin.sites.site.register(MentorProfile)
+# Register your models here.
+admin.site.register(MentorProfile)
+admin.site.register(LibrarianProfile)
+admin.site.register(StudentProfile)

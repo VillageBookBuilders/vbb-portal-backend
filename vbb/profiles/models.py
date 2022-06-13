@@ -40,6 +40,7 @@ class MentorProfile(models.Model):
     phone_number = models.CharField(max_length=255, null=True)
     secondary_email = models.CharField(max_length=255, null=True)
     is_of_age = models.BooleanField(default=False)
+    bio = models.TextField(blank=True)
 
     def __str__(self):
         return f"Mentor Profile for {self.user}"
@@ -66,6 +67,7 @@ class LibrarianProfile(models.Model):
 
     library = models.ForeignKey(Library, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
 
     def __str__(self) -> str:
         return f"Librarian Profile for {self.user}"
@@ -81,6 +83,7 @@ class StudentProfile(models.Model):
     mentoring_languages = models.ManyToManyField(Language, related_name="+")
     subjects = models.ManyToManyField(Subject, related_name="+")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
 
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)

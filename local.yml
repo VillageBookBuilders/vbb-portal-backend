@@ -5,6 +5,21 @@ volumes:
   vbb_local_postgres_data_backups: {}
 
 services:
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: vbb_production_postgres
+    container_name: vbb_local_postgres
+    volumes:
+      - vbb_local_postgres_data:/var/lib/postgresql/data:Z
+      - vbb_local_postgres_data_backups:/backups:z
+    env_file:
+      - ./.envs/.local/.postgres
+    ports:
+        - "5432:5432"
+    expose:
+        - "5432"
   django: &django
     build:
       context: .
@@ -23,18 +38,6 @@ services:
     ports:
       - "8000:8000"
     command: /start
-
-  postgres:
-    build:
-      context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
-    image: vbb_production_postgres
-    container_name: vbb_local_postgres
-    volumes:
-      - vbb_local_postgres_data:/var/lib/postgresql/data:Z
-      - vbb_local_postgres_data_backups:/backups:z
-    env_file:
-      - ./.envs/.local/.postgres
 
   docs:
     image: vbb_local_docs
