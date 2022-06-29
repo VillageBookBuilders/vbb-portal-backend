@@ -24,10 +24,15 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "pk",
             "username",
             "name",
+            "first_name",
+            "last_name",
+            "profileImage",
             "email",
             "time_zone",
+            "role",
             "is_student",
             "is_librarian",
             "is_mentor",

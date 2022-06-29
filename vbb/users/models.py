@@ -5,6 +5,14 @@ from django.utils.translation import gettext_lazy as _
 
 TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
+ROLE_CHOICES = (
+  (1, 'Student'),
+  (2, 'Mentor'),
+  (3, 'Advisor'),
+  (4, 'Librarian'),
+  (5, 'Admin'),
+)
+
 
 class User(AbstractUser):
     """
@@ -25,6 +33,11 @@ class User(AbstractUser):
     )
     email = models.EmailField(max_length=255, unique=True, null=True, blank=True)
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
+    first_name = models.CharField(_("First Name of User"), blank=True, max_length=255)
+    last_name = models.CharField(_("Last Name of User"), blank=True, max_length=255)
+    profileImage = models.CharField(_("Profile image url of user"), blank=True, max_length=512)
+    gender = models.CharField(_("Gender"), blank=True, max_length=255)
+    role = models.IntegerField(choices=ROLE_CHOICES, null=True, default=0)
     # time_zone is a softly required field. Not required at registration
     # but required to complete registration for all user profiles
     time_zone = models.CharField(max_length=255, null=True, choices=TIMEZONES)

@@ -6,6 +6,7 @@ from vbb.libraries.models import Library, Computer, LibraryComputerSlots, UserPr
 class LibrarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Library
+        fields="__all__"
         # fields = [
         #     "announcements",
         #     "id",
@@ -19,6 +20,7 @@ class LibraryWithComputersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Library
+        fields="__all__"
         # fields = [
         #     "announcements",
         #     "id",
@@ -31,6 +33,7 @@ class LibraryWithComputersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Library
+        fields="__all__"
 
 
 class CreateLibrarySerializer(serializers.Serializer):
@@ -68,6 +71,8 @@ Announcment Serializers
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
+        fields="__all__"
+
         # fields = [
         #     "announcements",
         #     "id",
@@ -100,6 +105,7 @@ Computer Serializers
 class ComputerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Computer
+        fields="__all__"
         # fields = [
         #     "announcements",
         #     "id",
@@ -134,6 +140,7 @@ Library Slot Serializers
 class LibrarySlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = LibraryComputerSlots
+        fields = '__all__'
         # fields = [
         #     "announcements",
         #     "id",
@@ -182,7 +189,7 @@ class RetieveUserPreferenceSlotSerializer(serializers.Serializer):
 class CreateUserPreferenceSlotSerializer(serializers.Serializer):
     student = serializers.IntegerField(required=False)
     mentor = serializers.IntegerField(required=False)
-    computer_slot = serializers.IntegerField(required=True)
+    lib_computer_slot = serializers.CharField(required=True)
     start_time = serializers.CharField(required=True, max_length=1024)
     end_time = serializers.CharField(required=True, max_length=1024)
     start_recurring = serializers.CharField(required=False, max_length=1024)
@@ -193,7 +200,7 @@ class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
     uniqueID = serializers.CharField(required=True, max_length=1024)
     student = serializers.IntegerField(required=False)
     mentor = serializers.IntegerField(required=False)
-    computer_slot = serializers.IntegerField(required=True)
+    lib_computer_slot = serializers.CharField(required=True)
     start_time = serializers.CharField(required=True, max_length=1024)
     end_time = serializers.CharField(required=True, max_length=1024)
     start_recurring = serializers.CharField(required=False, max_length=1024)

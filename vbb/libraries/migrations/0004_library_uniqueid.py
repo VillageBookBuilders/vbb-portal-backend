@@ -16,4 +16,8 @@ class Migration(migrations.Migration):
             name='uniqueID',
             field=models.UUIDField(default=uuid.uuid4, editable=False),
         ),
+        migrations.RemoveField(
+            model_name='library',
+            name='announcements',
+        ),
     ]

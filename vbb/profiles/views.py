@@ -15,11 +15,25 @@ from rest_framework.views import APIView
 
 from vbb.libraries.models import Library
 from vbb.organizations.models import Organization
-from vbb.profiles.models import MentorProfile, StudentProfile
+from vbb.profiles.models import MentorProfile, StudentProfile, Opportunity
+from vbb.profiles.serializers import OpportunitySerializer
 from vbb.users.admin import User
 from vbb.users.api.serializers import UserSerializer
 from vbb.users.models import TIMEZONES
 from vbb.utils.custom_csrf import CsrfHTTPOnlySessionAuthentication
+from rest_framework import viewsets
+
+
+class OpportunityViewSet(viewsets.ModelViewSet):
+    """
+    Genre Views from Rest Framework
+    """
+
+    authentication_classes = ()
+    permission_classes = []
+    queryset = Opportunity.objects.all()
+    serializer_class = OpportunitySerializer
+
 
 
 class MentorSignUp(APIView):
@@ -39,11 +53,16 @@ class MentorSignUp(APIView):
             }
         """
         email = request.data.get("email")
-        name = request.data.get("name")
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
+
         password = request.data.get("password")
+        confirmPW = request.data.get("confirm_password")
+
+        name = first_name + ' ' + last_name
 
         try:
-            user = User.objects.create(name=name, email=email)
+            user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_mentor=True, email=email)
             user.set_password(password)
             user.save()
 
@@ -77,7 +96,7 @@ class MentorConfirmationEmailViewSet(APIView):
     authentication_classes = ()
     permission_classes = []
 
-    def get(self, request: Request):
+    def post(self, request: Request) -> Response:
         """
         Updates user.is_email_verified to true if JWT can be decoded
 
@@ -86,29 +105,25 @@ class MentorConfirmationEmailViewSet(APIView):
             HTTP_403_FORBIDDEN,
             HTTP_500_INTERNAL_SERVER_ERROR if the root uri
         """
-        token = request.query_params.get("token")
+        token = request.data.get("token")
+
         if not token:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        decoded_token = jwt.decode(token, key=settings.SECRET_KEY, algorithms=["HS256"])
+        try:
+            decoded_token = jwt.decode(token, key=settings.SECRET_KEY, algorithms=["HS256"])
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"message":"Could not decode JWT."})
+
         try:
             user = User.objects.get(id=decoded_token.get("user_id"))
             user.is_email_verified = True
             user.save()
 
-            full_url = request.build_absolute_uri()
-            try:
-                # regex
-                # 'http://vbb.local/api/v1/mentor-sign-up/' -> ['http://vbb.local/']
-                base_url = re.findall("^.*?(?=api)", full_url)[0]
-                redirect_url = base_url + "login"
-                return HttpResponseRedirect(redirect_to=redirect_url)
-            except IndexError:
-                # regex failed to pull the root uri
-                return Response(
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    data={"message": "Error parsing root uri"},
-                )
+            return Response(
+                status=status.HTTP_200_OK,
+                data={"message": "Successfully verified your email!"},
+            )
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -118,7 +133,6 @@ class MentorProfileViewSet(APIView):
     Mentor Profile Views from Rest Framework
     """
 
-    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request: Request) -> Response:
@@ -139,7 +153,8 @@ class MentorProfileViewSet(APIView):
         }
         """
         user = request.user
-        data = request.data.get("data", {})
+        data = request.data
+        print(data)
         career_ids = data.get("careers", [])
         mentoring_language_ids = data.get("mentoring_languages", [])
         subject_ids = data.get("subjects", [])
@@ -167,9 +182,10 @@ class MentorProfileViewSet(APIView):
         if date_of_birth:
             user.date_of_birth = datetime.strptime(date_of_birth, "%m/%d/%Y")
 
-        user.is_mentor = True
+        # user.is_mentor = True
         user.save()
         user.refresh_from_db()
+
         (mentor_profile, _) = MentorProfile.objects.update_or_create(
             # criteria for the get value
             user=user,
@@ -205,6 +221,48 @@ class MentorProfileViewSet(APIView):
         return Response(status=status.HTTP_201_CREATED, data=serialized_user.data)
 
 
+
+
+
+class StudentSignUp(APIView):
+    """Public Student Sign Up view"""
+
+    authentication_classes = ()
+    permission_classes = []
+
+    def post(self, request: Request) -> Response:
+        """
+        Manages Student Sign Up
+
+        data example:{
+            "email": "will@test.com",
+            "name": "Test Mentor Signup",
+            "password": ""
+            }
+        """
+        username = request.data.get("username")
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
+
+        password = request.data.get("password")
+        confirmPW = request.data.get("confirm_password")
+
+        name = first_name + ' ' + last_name
+
+        try:
+            user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_student=True, username=username)
+            user.set_password(password)
+            user.save()
+            return Response(status=status.HTTP_201_CREATED)
+
+        except IntegrityError:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "Email is already taken"},
+            )
+
+
+
 class StudentProfileViewSet(APIView):
     """
     Student Profile Views from Rest Framework
@@ -214,8 +272,7 @@ class StudentProfileViewSet(APIView):
     so there is no user logged in
     """
 
-    authentication_classes = ()
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request: Request) -> Response:
         """
@@ -232,61 +289,69 @@ class StudentProfileViewSet(APIView):
             "username": "test_student1",
         }
         """
-
-        data = request.data.get("data", {})
-        careers_of_interest = data.get("careers_of_interest", [])
-        mentoring_language_ids = data.get("mentoring_languages", [])
-        subject_ids = data.get("subjects", [])
+        user = request.user
+        data = request.data
+        careers_of_interest = data.get("careers", [])
+        mentoring_language_ids = data.get("mentoring_language_ids", [])
+        favorite_genres_ids = data.get("favorite_genres_ids", [])
+        subject_ids = data.get("subject_ids", [])
+        struggle_subject_ids = data.get("struggle_subject_ids", [])
         library_code = data.get("library_code", "")
-
-        username = data.get("username")
-        password = data.get("password")
-        name = data.get("name")
         time_zone = data.get("timezone", "")
+        family_status = data.get("family_status", "")
+        family_support_level = data.get("family_support_level", "")
+        graduation_obstacle = data.get("graduation_obstacle", "")
+        grade_level = data.get("grade_level", "")
+        year_of_birth = data.get("year_of_birth", "")
+        gender = data.get("gender", "")
 
         # validate the library code
         try:
+            print(data)
             assigned_library = Library.objects.get(library_code=library_code)
         except ObjectDoesNotExist:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
-                data={"message": "Library code provided was not found."},
+                data={"message": "Library with the code provided was not found."},
             )
 
         # create user
         time_zones = dict(TIMEZONES)
         user_time_zone = time_zones.get(time_zone)
+
         try:
-            user = User.objects.create(
-                username=username, name=name, time_zone=user_time_zone
-            )
+            if assigned_library:
+                (student_profile, _) = StudentProfile.objects.update_or_create(
+                    # criteria for the get value
+                    user=user,
+                    defaults={
+                        # values used to update or create
+                        "assigned_library": assigned_library,
+                        "family_status": family_status,
+                        "family_support_level": family_support_level,
+                        "graduation_obstacle": graduation_obstacle,
+                        "grade_level": grade_level,
+                    },
+                )
+
+                student_profile.careers_of_interest.add(*careers_of_interest)
+                student_profile.mentoring_languages.add(*mentoring_language_ids)
+                student_profile.subjects.add(*subject_ids)
+                student_profile.favorite_genres.add(*favorite_genres_ids)
+
+                student_profile.save()
+            else:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"message": "Assigned library code could not be retieved."},
+                )
+
+
         except IntegrityError:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
-                data={"message": "Username is already taken."},
+                data={"message": "Student profile is already created."},
             )
-
-        # this hashes the password
-        user.set_password(password)
-        user.is_student = True
-        user.save()
-        user.refresh_from_db()
-
-        is_verified = True if assigned_library else False
-        (student_profile, _) = StudentProfile.objects.update_or_create(
-            # criteria for the get value
-            user=user,
-            defaults={
-                # values used to update or create
-                "assigned_library": assigned_library,
-                "is_verified": is_verified,
-            },
-        )
-
-        student_profile.careers_of_interest.add(*careers_of_interest)
-        student_profile.mentoring_languages.add(*mentoring_language_ids)
-        student_profile.subjects.add(*subject_ids)
-        student_profile.save()
 
         serialized_user = UserSerializer(
             user,

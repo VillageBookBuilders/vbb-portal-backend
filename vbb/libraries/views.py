@@ -6,9 +6,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from vbb.libraries.models import Library
+from vbb.libraries.models import Library, LibraryComputerSlots, UserPreferenceSlot
 from vbb.libraries.serializers import LibrarySerializer, LibraryWithComputersSerializer
 from vbb.utils.custom_csrf import CsrfHTTPOnlySessionAuthentication
+from vbb.libraries import serializers
 
 class LibraryViews(viewsets.ViewSet):
     """All non-admin level Library Views
@@ -240,14 +241,11 @@ class ComputerViews(APIView):
 
 class LibraryComputerSlotViews(APIView):
     """All Computer Related Views"""
-
-    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
-        serializer = serializers.RetieveLibrarySlotSerializer(data=request.data)
-        uniqueID = serializer.validated_data["uniqueID"]
+    def get(self, request: Request, uniqueID) -> Response:
+        #serializer = serializers.RetieveLibrarySlotSerializer(data=request.data)
 
         if uniqueID == "" or uniqueID == None:
                 return Response({"error": "Provided library uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
@@ -261,9 +259,10 @@ class LibraryComputerSlotViews(APIView):
             return Response({"error": "Library with that provided uniuqeID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            librarySlots = LibraryComputerSlots.objects.get(library=library.pk)
+            librarySlots = LibraryComputerSlots.objects.filter(library=library.pk)
         except LibraryComputerSlots.DoesNotExist:
             return Response({"error": "No computer slots with this library could be found."}, status=status.HTTP_400_BAD_REQUEST)
+        print(librarySlots)
 
         librarySlotsSerializer = serializers.LibrarySlotSerializer(librarySlots, many=True)
         return Response(librarySlotsSerializer.data, status=status.HTTP_200_OK)
@@ -342,7 +341,7 @@ class LibraryComputerSlotViews(APIView):
 class UserPreferenceSlotViews(APIView):
     """All User Preference Slot Views"""
 
-    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    #authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
@@ -381,17 +380,17 @@ class UserPreferenceSlotViews(APIView):
             serializer = serializers.CreateUserPreferenceSlotSerializer(data=request.data)
             if serializer.is_valid():
                 student = serializer.validated_data["student"]
-                mentor = serializer.validated_data["mentor"]
-                computer_slot = serializer.validated_data["computer_slot"]
+                #mentor = serializer.validated_data["mentor"]
+                lib_computer_slot = serializer.validated_data["lib_computer_slot"]
                 start_time = serializer.validated_data["start_time"]
                 end_time = serializer.validated_data["end_time"]
-                start_recurring = serializer.validated_data["start_recurring"]
-                end_recurring = serializer.validated_data["end_recurring"]
+                #start_recurring = serializer.validated_data["start_recurring"]
+                #end_recurring = serializer.validated_data["end_recurring"]
 
                 availableSlot = {}
 
                 try:
-                    availableSlot = LibraryComputerSlots.objects.get(pk=computer_slot)
+                    availableSlot = LibraryComputerSlots.objects.get(uniqueID=lib_computer_slot)
                 except LibraryComputerSlots.DoesNotExist:
                     return Response({"error": "LibraryComputerSlot with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 

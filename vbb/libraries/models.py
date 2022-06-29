@@ -13,7 +13,7 @@ class Library(models.Model):
     Library site under VBB
     """
     uniqueID = models.UUIDField(max_length=1024, default=uuid.uuid4, editable=False)
-    announcements = models.CharField(max_length=255)  #nix
+    #announcements = models.CharField(max_length=255)  #nix
     is_accepting_new_mentors = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
     library_code = models.CharField(max_length=255, unique=True, null=True)
