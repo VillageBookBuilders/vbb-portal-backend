@@ -80,6 +80,7 @@ class MentorProfile(models.Model):
     is_of_age = models.BooleanField(default=False)
     bio = models.TextField(blank=True)
     how_found_us = models.CharField(max_length=1024, null=True, blank=True)
+    is_onboarded = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Mentor Profile for {self.user}"
@@ -131,7 +132,8 @@ class StudentProfile(models.Model):
     graduation_obstacle = models.CharField(_("Government Obstacle"), blank=True, max_length=255)
     grade_level = models.IntegerField(choices=GRADE_CHOICES, null=True, default=0)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
+    is_onboarded = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
 
     def __str__(self) -> str:

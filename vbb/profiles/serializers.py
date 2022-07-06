@@ -39,6 +39,7 @@ class MentorProfileSerializer(serializers.ModelSerializer):
             "completed_registration",
             "mentoring_languages",
             "approval_status",
+            "is_onboarded"
         ]
 
 
@@ -62,6 +63,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "graduation_obstacle",
             "grade_level",
             "bio",
+            "is_onboarded"
             # the below are fields only for admin level
             # "is_active",
             # "is_verified",

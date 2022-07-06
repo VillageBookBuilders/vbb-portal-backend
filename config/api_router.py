@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
-from vbb.libraries.views import (LibraryViews, LibraryComputerSlotViews, UserPreferenceSlotViews)
+from vbb.libraries.views import (LibraryViews, RetrieveLibraryStudentPreferencesViews, LibraryComputerSlotViews, UserPreferenceSlotViews, ComputerReservationViews, BookComputerReservationViews)
 from vbb.profiles.views import (
     MentorConfirmationEmailViewSet,
     MentorProfileViewSet,
@@ -53,12 +53,34 @@ urlpatterns = [
         StudentProfileViewSet().as_view(),
     ),
     path(
-        "library-slots/<str:uniqueID>",
+        "library-slots/",
         LibraryComputerSlotViews().as_view(),
+    ),
+    path(
+        "library-slots/detail/<str:uniqueID>",
+        LibraryComputerSlotViews().as_view(),
+    ),
+    path(
+        "library-student-slots/detail/<str:uniqueID>",
+        RetrieveLibraryStudentPreferencesViews().as_view(),
     ),
     path(
         "user-preference-slots/",
         UserPreferenceSlotViews().as_view(),
+    ),
+    path(
+        "user-preference-slots/detail/<str:uniqueID>",
+        UserPreferenceSlotViews().as_view(),
+    ),
+
+    path(
+        "computer-reservations/",
+        ComputerReservationViews().as_view(),
+    ),
+
+    path(
+        "book-student-reservations/",
+        BookComputerReservationViews().as_view(),
     ),
     path("timezones/", TimezoneViewSet().as_view()),
     path("mentor-email-confirmation/", MentorConfirmationEmailViewSet().as_view()),

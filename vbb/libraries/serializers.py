@@ -1,7 +1,13 @@
 from rest_framework import serializers
 
 from vbb.libraries.models import Library, Computer, LibraryComputerSlots, UserPreferenceSlot, ComputerReservation, Announcement
-
+from vbb.users.models import User
+#
+#
+class ReservationUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields=["first_name", "last_name", "profileImage", "id", "username", "email", "is_student", "is_mentor"]
 
 class LibrarySerializer(serializers.ModelSerializer):
     class Meta:
@@ -174,6 +180,7 @@ UserPreferenceSlot Serializers
 class UserPreferenceSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPreferenceSlot
+        fields = '__all__'
         # fields = [
         #     "announcements",
         #     "id",
@@ -200,9 +207,9 @@ class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
     uniqueID = serializers.CharField(required=True, max_length=1024)
     student = serializers.IntegerField(required=False)
     mentor = serializers.IntegerField(required=False)
-    lib_computer_slot = serializers.CharField(required=True)
-    start_time = serializers.CharField(required=True, max_length=1024)
-    end_time = serializers.CharField(required=True, max_length=1024)
+    lib_computer_slot = serializers.CharField(required=False)
+    start_time = serializers.CharField(required=False, max_length=1024)
+    end_time = serializers.CharField(required=False, max_length=1024)
     start_recurring = serializers.CharField(required=False, max_length=1024)
     end_recurring = serializers.CharField(required=False, max_length=1024)
 
@@ -213,12 +220,23 @@ ComputerReservation Serializers
 class ComputerReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComputerReservation
+        fields = '__all__'
         # fields = [
         #     "announcements",
         #     "id",
         #     "is_accepting_new_mentors",
         #     "name",
         # ]
+
+class ComputerReservationWithUserSerializer(serializers.ModelSerializer):
+
+    student = ReservationUserSerializer(many=False)
+    mentor = ReservationUserSerializer(many=False)
+    computer = ComputerSerializer(many=False)
+
+    class Meta:
+        model = ComputerReservation
+        fields = '__all__'
 
 class CreateComputerReservationSerializer(serializers.Serializer):
     student = serializers.IntegerField(required=True)
@@ -235,7 +253,7 @@ class CreateComputerReservationSerializer(serializers.Serializer):
 
 
 class UpdateComputerReservationSerializer(serializers.Serializer):
-    uniqueID = serializers.CharField(required=True, max_length=1024)
+    unique_id = serializers.CharField(required=True, max_length=1024)
     student = serializers.IntegerField(required=False)
     mentor = serializers.IntegerField(required=False)
     reserved_slot = serializers.IntegerField(required=False)
@@ -252,3 +270,5 @@ class UpdateComputerReservationSerializer(serializers.Serializer):
     transcript_file = serializers.CharField(required=False, max_length=1024)
     meetingID = serializers.CharField(required=False, max_length=1024)
     conferenceURL = serializers.CharField(required=False, max_length=1024)
+    conference_type = serializers.CharField(required=False, max_length=1024)
+    #notes = serializers.CharField(required=False, max_length=1024)

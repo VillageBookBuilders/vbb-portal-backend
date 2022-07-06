@@ -97,7 +97,7 @@ class UserPreferenceSlot(models.Model):
 #Day OF mODEL
 class ComputerReservation(models.Model):
     uniqueID = models.UUIDField(max_length=1024, default=uuid.uuid4, editable=False)
-    reserved_slot = models.ForeignKey(LibraryComputerSlots, on_delete=models.CASCADE)
+    reserved_slot = models.ForeignKey(UserPreferenceSlot, on_delete=models.CASCADE)
     reserved_date = models.DateTimeField(auto_now_add=True)
     reserve_status = models.IntegerField(choices=STATUS, null=True, default=0)
     mentor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='reservation_mentor')

@@ -58,13 +58,63 @@ class MentorSignUp(APIView):
 
         password = request.data.get("password")
         confirmPW = request.data.get("confirm_password")
+        corporate_code = request.data.get("corporate_code", "")
 
         name = first_name + ' ' + last_name
 
+        assigned_library = None
+        org = None
+
+
+        if len(email) > 45:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"error": "Email must be less than 45 characters, and must be unique."},
+            )
+
+
         try:
-            user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_mentor=True, email=email)
+            # validate the username
+            existingEmail = User.objects.get(email=email)
+
+            if existingEmail:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"error": "A user with that email already exists."},
+                )
+        except ObjectDoesNotExist:
+            pass
+
+        if password != confirmPW:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"error": "Passwords must match."},
+            )
+
+        # Look up Organization by corp code
+        if corporate_code != "" and corporate_code != None:
+            try:
+                org = Organization.objects.get(corporate_code=corporate_code)
+                assigned_library = org.library
+            except Organization.DoesNotExist:
+
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"message": "A corporate/charter organization with that code does not exist. Please try again with a valid code."},
+                )
+
+        try:
+            user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_mentor=True, email=email, is_active=False)
             user.set_password(password)
             user.save()
+
+            if assigned_library:
+                mentorProfile = MentorProfile.objects.create(assigned_library=assigned_library, organization=org, user=user, is_onboarded=False)
+                mentorProfile.save()
+            else:
+                mentorProfile = MentorProfile.objects.create(user=user, is_onboarded=False)
+                mentorProfile.save()
+
 
             link = settings.EMAIL_LINK
             # Still needs to send email
@@ -80,7 +130,7 @@ class MentorSignUp(APIView):
             send_mail(
                 "Village Book Builders - Please confirm your email",
                 body,
-                "test@test.com",
+                "chris@myrelaytech.com",
                 [user.email],
             )
             return Response(status=status.HTTP_201_CREATED)
@@ -118,6 +168,7 @@ class MentorConfirmationEmailViewSet(APIView):
         try:
             user = User.objects.get(id=decoded_token.get("user_id"))
             user.is_email_verified = True
+            user.is_active = True
             user.save()
 
             return Response(
@@ -162,17 +213,17 @@ class MentorProfileViewSet(APIView):
         interests = data.get("interests", "")
         phone_number = data.get("phone_number", "")
         secondary_email = data.get("secondary_email", "")
-        corporate_code = data.get("corporate_code", "")
+        #corporate_code = data.get("corporate_code", "")
         is_of_age = data.get("is_of_age", False)
         time_zone = data.get("timezone", "")
         date_of_birth = data.get("date_of_birth")
         # Look up Organization by corp code
-        try:
-            org = Organization.objects.get(corporate_code=corporate_code)
-            assigned_library = org.library
-        except Organization.DoesNotExist:
-            assigned_library = None
-            org = None
+        # try:
+        #     org = Organization.objects.get(corporate_code=corporate_code)
+        #     assigned_library = org.library
+        # except Organization.DoesNotExist:
+        #     assigned_library = None
+        #     org = None
 
         time_zones = dict(TIMEZONES)
         user_time_zone = time_zones.get(time_zone)
@@ -191,8 +242,6 @@ class MentorProfileViewSet(APIView):
             user=user,
             defaults={
                 # values used to update or create
-                "assigned_library": assigned_library,
-                "organization": org,
                 "application_video_url": application_video_url,
                 # approval_status : models.CharField(
                 #     max_length:30,
@@ -212,6 +261,7 @@ class MentorProfileViewSet(APIView):
         mentor_profile.careers.add(*career_ids)
         mentor_profile.mentoring_languages.add(*mentoring_language_ids)
         mentor_profile.subjects.add(*subject_ids)
+        mentor_profile.is_onboarded = True
         mentor_profile.save()
 
         serialized_user = UserSerializer(
@@ -246,13 +296,55 @@ class StudentSignUp(APIView):
 
         password = request.data.get("password")
         confirmPW = request.data.get("confirm_password")
+        library_code = request.data.get("library_code")
 
         name = first_name + ' ' + last_name
+
+
+        if len(username) > 45:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "Username must be less than 45 characters, and must be unique."},
+            )
+
+
+        try:
+            # validate the username
+            existingUsername = User.objects.get(username=username)
+
+            if existingUsername:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"message": "A user with that username already exists."},
+                )
+
+        except ObjectDoesNotExist:
+            pass
+
+        if password != confirmPW:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "Passwords must match."},
+            )
+
+        # validate the library code
+        try:
+            assigned_library = Library.objects.get(library_code=library_code)
+        except ObjectDoesNotExist:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "A Library could not be found with the code provided."},
+            )
+
 
         try:
             user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_student=True, username=username)
             user.set_password(password)
             user.save()
+
+            userProfile = StudentProfile.objects.create(assigned_library=assigned_library, user=user, is_onboarded=False)
+            userProfile.save()
+
             return Response(status=status.HTTP_201_CREATED)
 
         except IntegrityError:
@@ -306,46 +398,38 @@ class StudentProfileViewSet(APIView):
         gender = data.get("gender", "")
 
         # validate the library code
-        try:
-            print(data)
-            assigned_library = Library.objects.get(library_code=library_code)
-        except ObjectDoesNotExist:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={"message": "Library with the code provided was not found."},
-            )
+        # try:
+        #     print(data)
+        #     assigned_library = Library.objects.get(library_code=library_code)
+        # except ObjectDoesNotExist:
+        #     return Response(
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #         data={"message": "Library with the code provided was not found."},
+        #     )
 
         # create user
         time_zones = dict(TIMEZONES)
         user_time_zone = time_zones.get(time_zone)
 
         try:
-            if assigned_library:
-                (student_profile, _) = StudentProfile.objects.update_or_create(
-                    # criteria for the get value
-                    user=user,
-                    defaults={
-                        # values used to update or create
-                        "assigned_library": assigned_library,
-                        "family_status": family_status,
-                        "family_support_level": family_support_level,
-                        "graduation_obstacle": graduation_obstacle,
-                        "grade_level": grade_level,
-                    },
-                )
+            (student_profile, _) = StudentProfile.objects.update_or_create(
+                # criteria for the get value
+                user=user,
+                defaults={
+                    # values used to update or create
+                    "family_status": family_status,
+                    "family_support_level": family_support_level,
+                    "graduation_obstacle": graduation_obstacle,
+                    "grade_level": grade_level,
+                },
+            )
 
-                student_profile.careers_of_interest.add(*careers_of_interest)
-                student_profile.mentoring_languages.add(*mentoring_language_ids)
-                student_profile.subjects.add(*subject_ids)
-                student_profile.favorite_genres.add(*favorite_genres_ids)
-
-                student_profile.save()
-            else:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST,
-                    data={"message": "Assigned library code could not be retieved."},
-                )
-
+            student_profile.careers_of_interest.add(*careers_of_interest)
+            student_profile.mentoring_languages.add(*mentoring_language_ids)
+            student_profile.subjects.add(*subject_ids)
+            student_profile.favorite_genres.add(*favorite_genres_ids)
+            student_profile.is_onboarded = True
+            student_profile.save()
 
         except IntegrityError:
             return Response(

@@ -220,10 +220,14 @@ X_FRAME_OPTIONS = "DENY"
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env(
-    "DJANGO_EMAIL_BACKEND",
-    default="django.core.mail.backends.smtp.EmailBackend",
-)
+# EMAIL_BACKEND = env(
+#     "DJANGO_EMAIL_BACKEND",
+#     default="django.core.mail.backends.smtp.EmailBackend",
+# )
+
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = env("SENDGRID_API_KEY", default="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")
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
 
