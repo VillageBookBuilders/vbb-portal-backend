@@ -134,10 +134,10 @@ class CreateComputerSerializer(serializers.Serializer):
 class UpdateComputerSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, max_length=2048)
     key = serializers.CharField(required=False, max_length=2048)
-    email = serializers.CharField(required=False, allow_null=True, max_length=2048)
-    mac_address = serializers.CharField(required=False, allow_null=True, max_length=2048)
-    ip_address = serializers.CharField(required=False, allow_null=True, max_length=1024)
-    notes = serializers.CharField(required=False, allow_null=True, max_length=2048)
+    email = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=2048)
+    mac_address = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=2048)
+    ip_address = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=1024)
+    notes = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=2048)
     is_down = serializers.BooleanField(required=False)
 
 '''
