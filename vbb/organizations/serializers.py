@@ -1,0 +1,7 @@
+from rest_framework import serializers
+from vbb.organizations.models import Organization
+
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = '__all__'

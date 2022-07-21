@@ -13,6 +13,7 @@ class Library(models.Model):
     Library site under VBB
     """
     uniqueID = models.UUIDField(max_length=1024, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     #announcements = models.CharField(max_length=255)  #nix
     is_accepting_new_mentors = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
@@ -36,12 +37,12 @@ class Announcement(models.Model):
     """
     uniqueID = models.UUIDField(max_length=1024, default=uuid.uuid4, editable=False)
     text = models.TextField()
-    created_at = models.DateTimeField(default=None, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     display_start = models.DateTimeField(default=None, blank=True, null=True)
     display_end = models.DateTimeField(default=None, blank=True, null=True)
     library = models.ForeignKey(Library, null=True, on_delete=models.SET_NULL)
-    notes = models.TextField()
+    notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.text
@@ -56,8 +57,11 @@ class Computer(models.Model):
     key = models.CharField(max_length=1024)
     mac_address = models.CharField(max_length=255, null=True, blank=True)
     ip_address = models.CharField(max_length=255, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
     notes = models.CharField(max_length=255, null=True, blank=True)
     is_reserved = models.BooleanField(default=False)
+    is_down = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -86,7 +90,8 @@ class UserPreferenceSlot(models.Model):
     end_time = models.DateTimeField(default=None, blank=True, null=True)
     start_recurring = models.DateTimeField(default=None, blank=True, null=True)
     end_recurring = models.DateTimeField(default=None, blank=True, null=True)
-    created_at = models.DateTimeField(default=None, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    is_recurring = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.uniqueID)
@@ -97,10 +102,11 @@ class UserPreferenceSlot(models.Model):
 #Day OF mODEL
 class ComputerReservation(models.Model):
     uniqueID = models.UUIDField(max_length=1024, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     reserved_slot = models.ForeignKey(UserPreferenceSlot, on_delete=models.CASCADE)
     reserved_date = models.DateTimeField(auto_now_add=True)
     reserve_status = models.IntegerField(choices=STATUS, null=True, default=0)
-    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='reservation_mentor')
+    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,  blank=True, on_delete=models.SET_NULL, related_name='reservation_mentor')
     student = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='reservation_student')
     computer = models.ForeignKey(Computer, on_delete=models.SET_NULL, null=True)
     transaction_id = models.CharField(max_length=255, unique=True, null=False, blank=False)

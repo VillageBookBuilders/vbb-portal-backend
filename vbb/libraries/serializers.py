@@ -93,16 +93,15 @@ class RetieveAnnouncementSerializer(serializers.Serializer):
 class CreateAnnouncementSerializer(serializers.Serializer):
     display_start = serializers.CharField(required=True, max_length=1024)
     display_end = serializers.CharField(required=True, max_length=1024)
-    library = serializers.IntegerField(required=True)
+    library = serializers.CharField(required=True)
     text = serializers.CharField(required=True, max_length=2048)
-    notes = serializers.CharField(required=False, max_length=2048)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=2048)
 
 class UpdateAnnouncementSerializer(serializers.Serializer):
-    uniqueID = serializers.CharField(required=True, max_length=1024)
     display_start = serializers.CharField(required=False, max_length=1024)
     display_end = serializers.CharField(required=False, max_length=1024)
     text = serializers.CharField(required=False, max_length=2048)
-    notes = serializers.CharField(required=False, max_length=2048)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=2048)
 
 '''
 Computer Serializers
@@ -125,20 +124,21 @@ class RetieveComputersSerializer(serializers.Serializer):
 
 class CreateComputerSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=2048)
-    key = serializers.CharField(required=True, max_length=2048)
-    mac_address = serializers.CharField(required=False, max_length=2048)
-    ip_address = serializers.CharField(required=False, max_length=1024)
+    key = serializers.CharField(required=False, allow_blank=True, max_length=2048)
+    email = serializers.CharField(required=False, allow_blank=True, max_length=2048)
+    mac_address = serializers.CharField(required=False, allow_blank=True, max_length=2048)
+    ip_address = serializers.CharField(required=False, allow_blank=True, max_length=1024)
     library = serializers.IntegerField(required=True)
-    notes = serializers.CharField(required=False, max_length=2048)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=2048)
 
 class UpdateComputerSerializer(serializers.Serializer):
-    uniqueID = serializers.CharField(required=True, max_length=1024)
     name = serializers.CharField(required=False, max_length=2048)
     key = serializers.CharField(required=False, max_length=2048)
-    mac_address = serializers.CharField(required=False, max_length=2048)
-    ip_address = serializers.CharField(required=False, max_length=1024)
-    library = serializers.IntegerField(required=False)
-    notes = serializers.CharField(required=False, max_length=2048)
+    email = serializers.CharField(required=False, allow_null=True, max_length=2048)
+    mac_address = serializers.CharField(required=False, allow_null=True, max_length=2048)
+    ip_address = serializers.CharField(required=False, allow_null=True, max_length=1024)
+    notes = serializers.CharField(required=False, allow_null=True, max_length=2048)
+    is_down = serializers.BooleanField(required=False)
 
 '''
 Library Slot Serializers
@@ -188,6 +188,21 @@ class UserPreferenceSlotSerializer(serializers.ModelSerializer):
         #     "name",
         # ]
 
+class UserPreferenceSlotWithUsersSerializer(serializers.ModelSerializer):
+
+    student = ReservationUserSerializer(many=False)
+    mentor = ReservationUserSerializer(many=False)
+
+    class Meta:
+        model = UserPreferenceSlot
+        fields = '__all__'
+        # fields = [
+        #     "announcements",
+        #     "id",
+        #     "is_accepting_new_mentors",
+        #     "name",
+        # ]
+
 class RetieveUserPreferenceSlotSerializer(serializers.Serializer):
     """Get a list user preference slots given userId"""
     userId = serializers.IntegerField(required=True)
@@ -204,14 +219,13 @@ class CreateUserPreferenceSlotSerializer(serializers.Serializer):
 
 
 class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
-    uniqueID = serializers.CharField(required=True, max_length=1024)
     student = serializers.IntegerField(required=False)
     mentor = serializers.IntegerField(required=False)
     lib_computer_slot = serializers.CharField(required=False)
     start_time = serializers.CharField(required=False, max_length=1024)
     end_time = serializers.CharField(required=False, max_length=1024)
-    start_recurring = serializers.CharField(required=False, max_length=1024)
-    end_recurring = serializers.CharField(required=False, max_length=1024)
+    start_recurring = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=1024)
+    end_recurring = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=1024)
 
 
 '''

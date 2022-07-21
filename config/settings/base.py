@@ -226,7 +226,7 @@ X_FRAME_OPTIONS = "DENY"
 # )
 
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = env("SENDGRID_API_KEY", default="")
+SENDGRID_API_KEY = env("SENDGRID_API_KEY", default="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")
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5

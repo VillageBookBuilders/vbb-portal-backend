@@ -4,14 +4,21 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from vbb.careers.views import CareerViewSet
 from vbb.language.views import LanguageViewSet
-from vbb.libraries.views import (LibraryViews, RetrieveLibraryStudentPreferencesViews, LibraryComputerSlotViews, UserPreferenceSlotViews, ComputerReservationViews, BookComputerReservationViews)
+from vbb.libraries.views import (LibraryViews, RetrieveLibraryStudentPreferencesViews,
+LibraryComputerSlotViews, UserPreferenceSlotViews,
+ComputerReservationViews, BookComputerReservationViews,
+ComputerViews, RetrieveUserPreferenceSlotViews,
+RetrieveComputerReservationViews,
+LibraryDetailViews, AnnouncementViews, RetrieveLibraryComputerViews, RetrieveLibraryStudentsViews, RetrieveLibraryMentorsViews)
 from vbb.profiles.views import (
     MentorConfirmationEmailViewSet,
     MentorProfileViewSet,
     MentorSignUp,
     StudentProfileViewSet,
     StudentSignUp,
-    OpportunityViewSet
+    OpportunityViewSet,
+    ApproveStudentViewSet,
+    ApproveMentorViewSet
 )
 from vbb.subjects.views import SubjectViewSet, GenreViewSet
 from vbb.users.api.views import (
@@ -49,8 +56,57 @@ urlpatterns = [
         StudentSignUp().as_view(),
     ),
     path(
-        "complete-student-onboard/",
+        "mentors/status-update/",
+        ApproveMentorViewSet().as_view(),
+    ),
+    path(
+        "students/status-update/",
+        ApproveStudentViewSet().as_view(),
+    ),
+    path(
+        "status/",
         StudentProfileViewSet().as_view(),
+    ),
+    path(
+        "library/detail/<str:uniqueID>",
+        LibraryDetailViews().as_view(),
+    ),
+    path(
+        "library/all-computers/<str:uniqueID>",
+        RetrieveLibraryComputerViews().as_view(),
+    ),
+
+    path(
+        "library/students/<str:uniqueID>",
+        RetrieveLibraryStudentsViews().as_view(),
+    ),
+    path(
+        "library/mentors/<str:uniqueID>",
+        RetrieveLibraryMentorsViews().as_view(),
+    ),
+    path(
+        "library/announcements/",
+        AnnouncementViews().as_view(),
+    ),
+    path(
+        "library/announcements/<str:uniqueID>",
+        AnnouncementViews().as_view(),
+    ),
+    path(
+        "library/computers/<str:uniqueID>",
+        ComputerViews().as_view(),
+    ),
+    path(
+        "library/computers/",
+        ComputerViews().as_view(),
+    ),
+    path(
+        "library/computer-reservations/<str:uniqueID>",
+        RetrieveComputerReservationViews().as_view(),
+    ),
+    path(
+        "library/student-slots/<str:uniqueID>",
+        RetrieveUserPreferenceSlotViews().as_view(),
     ),
     path(
         "library-slots/",

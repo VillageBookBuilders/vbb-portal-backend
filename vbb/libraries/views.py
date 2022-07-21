@@ -2,17 +2,21 @@ from typing import Optional
 
 from rest_framework import permissions, status, viewsets
 from rest_framework.authentication import BasicAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from vbb.users.models import User
+from vbb.profiles.models import MentorProfile, StudentProfile
 
-from vbb.libraries.models import Library, LibraryComputerSlots, UserPreferenceSlot, Computer, ComputerReservation
+from vbb.libraries.models import Announcement, Library, LibraryComputerSlots, UserPreferenceSlot, Computer, ComputerReservation
 from vbb.libraries.serializers import LibrarySerializer, LibraryWithComputersSerializer
 from vbb.utils.custom_csrf import CsrfHTTPOnlySessionAuthentication
 from vbb.libraries import serializers
+from vbb.profiles import serializers as profileSerializers
 import uuid
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 class LibraryViews(viewsets.ViewSet):
     """All non-admin level Library Views
@@ -42,6 +46,32 @@ class LibraryViews(viewsets.ViewSet):
         except Library.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+class LibraryDetailViews(APIView):
+    """All non-admin level Library Views
+    Currently only a View Set with detail '/<uniqueID>'
+    """
+
+    #authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    def get(self, request: Request, uniqueID) -> Response:
+        #serializer = serializers.RetieveLibrarySlotSerializer(data=request.data)
+        if uniqueID == "" or uniqueID == None:
+                return Response({"error": "Provided library uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        library = None
+
+        try:
+            library = Library.objects.get(uniqueID=uniqueID)
+        except Library.DoesNotExist:
+            return Response({"error": "Library with that provided uniuqeID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        librarySerializer = serializers.LibrarySerializer(library, many=False)
+        return Response(librarySerializer.data, status=status.HTTP_200_OK)
+
+
+
 class AdminLibraryViews(APIView):
     """All Admin level Library Views"""
 
@@ -56,25 +86,23 @@ class AdminLibraryViews(APIView):
 class AnnouncementViews(APIView):
     """All Announcement level Library Views"""
 
-    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
-        serializer = serializers.RetieveAnnouncementSerializer(data=request.data)
-        library = serializer.validated_data["library"]
+    def get(self, request: Request, uniqueID) -> Response:
 
-        if library == "" or library == None:
+        if uniqueID == "" or uniqueID == None:
                 return Response({"error": "Provided library ID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
 
         libraryObj = {}
 
         try:
-            libraryObj = Library.objects.get(text=text)
+            libraryObj = Library.objects.get(uniqueID=uniqueID)
         except Library.DoesNotExist:
             return Response({"error": "Library with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-        allAnnouncements = Announcement.objects.get(library=libraryObj.pk)
+        allAnnouncements = Announcement.objects.filter(library=libraryObj.pk)
 
         if allAnnouncements == None:
             return Response({"error": "Server error occurred."}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,6 +113,7 @@ class AnnouncementViews(APIView):
 
     def post(self, request: Request) -> Response:
             serializer = serializers.CreateAnnouncementSerializer(data=request.data)
+            lib = {}
             if serializer.is_valid():
                 text = serializer.validated_data["text"]
                 display_start = serializer.validated_data["display_start"]
@@ -93,20 +122,29 @@ class AnnouncementViews(APIView):
                 notes = serializer.validated_data["notes"]
 
                 announcment = {}
+
+                try:
+                    lib = Library.objects.get(uniqueID=library)
+                except Announcement.DoesNotExist:
+                    return Response({"error": "Library with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
                 try:
                     announcment = Announcement.objects.get(text=text)
                 except Announcement.DoesNotExist:
-                    announcment = Announcement.objects.create(**serializer.validated_data)
+                    announcment = Announcement.objects.create(text=text, display_start=display_start, display_end=display_end, library=lib, notes=notes)
                     announcment.save()
 
                     announcmentSerializer = serializers.AnnouncementSerializer(announcment, many=False)
                     return Response(announcmentSerializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request: Request) -> Response:
+    def patch(self, request: Request, uniqueID) -> Response:
+
+            if uniqueID == "" or uniqueID == None:
+                    return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
             serializer = serializers.UpdateAnnouncementSerializer(data=request.data)
             if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
                 text = serializer.validated_data["text"]
                 display_start = serializer.validated_data["display_start"]
                 display_end = serializer.validated_data["display_end"]
@@ -130,35 +168,33 @@ class AnnouncementViews(APIView):
                 return Response(announcmentSerializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request: Request) -> Response:
-            serializer = serializers.UpdateAnnouncementSerializer(data=request.data)
-            if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
-                try:
-                    announcment = Announcement.objects.get(uniqueID=uniqueID)
-                except Announcement.DoesNotExist:
-                    return Response({"error": "Announcement with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
+    def delete(self, request: Request, uniqueID) -> Response:
+        print(uniqueID)
+        if uniqueID == "" or uniqueID == None:
+            return Response({"error": "Provided Announcement ID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-                announcment.delete()
-                return Response({"msg":"Announcement deleted successfully."}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            announcment = Announcement.objects.get(uniqueID=uniqueID)
+        except Announcement.DoesNotExist:
+            return Response({"error": "Announcement with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
 
-class ComputerViews(APIView):
+        announcment.delete()
+        return Response({"msg":"Announcement deleted successfully."}, status=status.HTTP_200_OK)
+
+
+class RetrieveLibraryMentorsViews(APIView):
     """All Computer Related Views"""
 
-    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
-        serializer = serializers.RetieveComputersSerializer(data=request.data)
-        uniqueID = serializer.validated_data["uniqueID"]
-
+    def get(self, request: Request, uniqueID) -> Response:
         if uniqueID == "" or uniqueID == None:
-                return Response({"error": "Provided library uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Provided library ID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-        computerObjs = None
-        library = None
+        library = {}
+        mentors = None
 
         try:
             library = Library.objects.get(uniqueID=uniqueID)
@@ -166,7 +202,61 @@ class ComputerViews(APIView):
             return Response({"error": "Library with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            computerObjs = Computer.objects.get(library=library.pk)
+            mentors = MentorProfile.objects.filter(assigned_library=library.pk)
+        except MentorProfile.DoesNotExist:
+            return Response({"error": "No mentor with that library could be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        mentorSerializer = profileSerializers.MentorProfileWithUserSerializer(mentors, many=True)
+        return Response(mentorSerializer.data, status=status.HTTP_200_OK)
+
+class RetrieveLibraryStudentsViews(APIView):
+    """All Computer Related Views"""
+
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # add admin permission levels
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, uniqueID) -> Response:
+        if uniqueID == "" or uniqueID == None:
+                return Response({"error": "Provided library ID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        library = {}
+        students = None
+
+        try:
+            library = Library.objects.get(uniqueID=uniqueID)
+        except Library.DoesNotExist:
+            return Response({"error": "Library with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            students = StudentProfile.objects.filter(assigned_library=library.pk)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "No students with that library could be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        studentSerializer = profileSerializers.StudentProfileWithUserSerializer(students, many=True)
+        return Response(studentSerializer.data, status=status.HTTP_200_OK)
+
+class RetrieveLibraryComputerViews(APIView):
+    """All Computer Related Views"""
+
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # add admin permission levels
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, uniqueID) -> Response:
+        if uniqueID == "" or uniqueID == None:
+                return Response({"error": "Provided library ID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        library = {}
+        computerObjs = None
+
+        try:
+            library = Library.objects.get(uniqueID=uniqueID)
+        except Library.DoesNotExist:
+            return Response({"error": "Library with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            computerObjs = Computer.objects.filter(library=library.pk)
         except Computer.DoesNotExist:
             return Response({"error": "No computers with that library could be found."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -174,77 +264,10 @@ class ComputerViews(APIView):
         return Response(computerSerializer.data, status=status.HTTP_200_OK)
 
 
-    def post(self, request: Request) -> Response:
-            serializer = serializers.CreateComputerSerializer(data=request.data)
-            if serializer.is_valid():
-                name = serializer.validated_data["name"]
-                key = serializer.validated_data["key"]
-                mac_address = serializer.validated_data["mac_address"]
-                ip_address = serializer.validated_data["ip_address"]
-                library = serializer.validated_data["library"]
-                notes = serializer.validated_data["notes"]
-
-                try:
-                    library = Library.objects.get(pk=library)
-                except Library.DoesNotExist:
-                    return Response({"error": "Library with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
-
-                computer = {}
-
-                computer = Computer.objects.create(**serializer.validated_data)
-                computer.save()
-                computerSerializer = serializers.ComputerSerializer(computer, many=False)
-                return Response(computerSerializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request: Request) -> Response:
-            serializer = serializers.UpdateComputerSerializer(data=request.data)
-            if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
-                name = serializer.validated_data["name"]
-                key = serializer.validated_data["key"]
-                mac_address = serializer.validated_data["mac_address"]
-                ip_address = serializer.validated_data["ip_address"]
-                library = serializer.validated_data["library"]
-                notes = serializer.validated_data["notes"]
-
-                computer = {}
-
-                try:
-                    computer = Computer.objects.get(uniqueID=uniqueID)
-                except Computer.DoesNotExist:
-                    return Response({"error": "Computer with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
-
-                computer.name = name
-                computer.key = key
-                computer.mac_address = mac_address
-                computer.ip_address = ip_address
-                computer.library = library
-                computer.notes = notes
-                computer.save()
-
-                computerSerializer = serializers.ComputerSerializer(computer, many=False)
-                return Response(computerSerializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request: Request) -> Response:
-            serializer = serializers.UpdateComputerSerializer(data=request.data)
-            if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
-                computer = {}
-
-                try:
-                    computer = Computer.objects.get(uniqueID=uniqueID)
-                except Computer.DoesNotExist:
-                    return Response({"error": "Computer with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
-
-                computer.delete()
-                return Response({"msg":"Computer deleted successfully."}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class LibraryComputerSlotViews(APIView):
     """All Computer Related Views"""
     # add admin permission levels
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request: Request, uniqueID) -> Response:
@@ -345,7 +368,7 @@ class LibraryComputerSlotViews(APIView):
 class RetrieveLibraryStudentPreferencesViews(APIView):
     """All User Preference Slot Views"""
 
-    #authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
@@ -370,7 +393,7 @@ class RetrieveLibraryStudentPreferencesViews(APIView):
                 print(libSlotIDs)
 
                 try:
-                    userSlots = UserPreferenceSlot.objects.filter(computer_slot__in=libSlotIDs)
+                    userSlots = UserPreferenceSlot.objects.filter(computer_slot__in=libSlotIDs, mentor=None)
                 except UserPreferenceSlot.DoesNotExist:
                     return Response({"error": "User Preference Slots with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -379,10 +402,116 @@ class RetrieveLibraryStudentPreferencesViews(APIView):
             return Response({"error": "Library uniqueID needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class RetrieveUserPreferenceSlotViews(APIView):
+    """All User Preference Slot Views"""
+
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # add admin permission levels
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, uniqueID) -> Response:
+        # serializer = serializers.RetieveUserPreferenceSlotSerializer(data=request.data)
+        # userId = serializer.validated_data["userId"]
+
+        userId = request.user.pk
+
+        if uniqueID == "" or uniqueID == None:
+                return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        userSlots = None
+        lib = None
+        hours = None
+
+        try:
+            lib = Library.objects.get(uniqueID=uniqueID)
+        except Library.DoesNotExist:
+            return Response({"error": "Library with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            hours = LibraryComputerSlots.objects.filter(library=lib)
+        except LibraryComputerSlots.DoesNotExist:
+            return Response({"error": "Library slots could not be found with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        slotList = []
+
+        for hr in hours:
+            slotList.append(hr.pk)
+
+        try:
+            userSlots = UserPreferenceSlot.objects.filter(computer_slot__in=slotList)
+
+        except UserPreferenceSlot.DoesNotExist:
+            return Response({"error": "No user slots with this userId could be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        userSlotsSerializer = serializers.UserPreferenceSlotWithUsersSerializer(userSlots, many=True)
+        return Response(userSlotsSerializer.data, status=status.HTTP_200_OK)
+
+
+class RetrieveComputerReservationViews(APIView):
+    """All User Preference Slot Views"""
+
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # add admin permission levels
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, uniqueID) -> Response:
+        # serializer = serializers.RetieveUserPreferenceSlotSerializer(data=request.data)
+        # userId = serializer.validated_data["userId"]
+
+        userId = request.user.pk
+
+        if uniqueID == "" or uniqueID == None:
+                return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        userSlots = None
+        lib = None
+        hours = None
+        computerReservations = None
+        try:
+            lib = Library.objects.get(uniqueID=uniqueID)
+        except Library.DoesNotExist:
+            return Response({"error": "Library with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            hours = LibraryComputerSlots.objects.filter(library=lib)
+        except LibraryComputerSlots.DoesNotExist:
+            return Response({"error": "Library slots could not be found with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        slotList = []
+
+        for hr in hours:
+            slotList.append(hr.pk)
+
+        try:
+            userSlots = UserPreferenceSlot.objects.filter(computer_slot__in=slotList)
+
+        except UserPreferenceSlot.DoesNotExist:
+            return Response({"error": "No user slots with this userId could be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        userSlotList = []
+
+        for slot in userSlots:
+            userSlotList.append(slot.pk)
+
+
+        try:
+            computerReservations = ComputerReservation.objects.filter(reserved_slot__in=userSlotList)
+
+        except ComputerReservation.DoesNotExist:
+            return Response({"error": "No computer reservations could be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        reservationSerializer = serializers.ComputerReservationWithUserSerializer(computerReservations, many=True)
+        return Response(reservationSerializer.data, status=status.HTTP_200_OK)
+
+
+
 class UserPreferenceSlotViews(APIView):
     """All User Preference Slot Views"""
 
-    #authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
@@ -523,7 +652,7 @@ class UserPreferenceSlotViews(APIView):
                         numOfSessionHours = hour_diff
                         print(numOfSessionHours)
 
-                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, student=studentObj)
+                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, student=studentObj, is_recurring=True)
                         userSlot.save()
                         userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -670,38 +799,99 @@ class UserPreferenceSlotViews(APIView):
                 return Response(userSlotSerializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request: Request) -> Response:
+    def patch(self, request: Request, uniqueID) -> Response:
             serializer = serializers.UpdateUserPreferenceSlotSerializer(data=request.data)
-            if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
-                student = serializer.validated_data["student"]
-                mentor = serializer.validated_data["mentor"]
-                lib_computer_slot = serializer.validated_data["lib_computer_slot"]
-                start_time = serializer.validated_data["start_time"]
-                end_time = serializer.validated_data["end_time"]
-                start_recurring = serializer.validated_data["start_recurring"]
-                end_recurring = serializer.validated_data["end_recurring"]
-
-                userSlot = {}
-
+            userSlot = {}
+            reservations = []
+            if uniqueID == "" or uniqueID == None:
+                    return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
                 try:
-                    userSlot = UserPreferenceSlot.objects.get(pk=computer_slot)
+                    userSlot = UserPreferenceSlot.objects.get(uniqueID=uniqueID)
                 except UserPreferenceSlot.DoesNotExist:
                     return Response({"error": "UserPreferenceSlot with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                userSlot.student = student
-                userSlot.mentor = mentor
-                userSlot.lib_computer_slot = lib_computer_slot
-                userSlot.start_time = start_time
-                userSlot.end_time = end_time
-                userSlot.start_recurring = start_recurring
-                userSlot.end_recurring = end_recurring
 
-                userSlot.save()
+                try:
+                    reservations = ComputerReservation.objects.filter(reserved_slot=userSlot.pk)
+                except ComputerReservation.DoesNotExist:
+                    return Response({"error": "ComputerReservation with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
-                return Response(userSlotSerializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                if serializer.is_valid():
+                    student = serializer.validated_data["student"]
+                    mentor = serializer.validated_data["mentor"]
+                    start_time = serializer.validated_data["start_time"]
+                    end_time = serializer.validated_data["end_time"]
+                    start_recurring = serializer.validated_data["start_recurring"]
+                    end_recurring = serializer.validated_data["end_recurring"]
+
+                    student = None
+                    mentor = None
+                    start_recurring = None
+                    end_recurring = None
+
+                    try:
+                        start_time = serializer.validated_data["start_time"]
+                        end_time = serializer.validated_data["end_time"]
+                        userSlot.start_time = start_time
+                        userSlot.end_time = end_time
+                    except KeyError:
+                        start_time = None
+                        end_time = None
+
+
+                    try:
+                        start_recurring = serializer.validated_data["start_recurring"]
+                        end_recurring = serializer.validated_data["end_recurring"]
+                    except KeyError:
+                        start_recurring = None
+                        end_recurring = None
+
+
+                    try:
+                        student = serializer.validated_data["student"]
+                    except KeyError:
+                        student = None
+
+                    try:
+                        mentor = serializer.validated_data["mentor"]
+                    except KeyError:
+                        mentor = None
+
+
+                    if student:
+                        student = User.objects.get(pk=student)
+                        userSlot.student = student
+
+                    if mentor:
+                        mentor = User.objects.get(pk=mentor)
+                        userSlot.mentor = mentor
+
+                    if start_time:
+                        userSlot.start_time = start_time
+
+                    if end_time:
+                        userSlot.end_time = end_time
+
+                    if start_recurring:
+                        userSlot.start_recurring = start_recurring
+
+                    if end_recurring:
+                        userSlot.end_recurring = end_recurring
+
+
+                    userSlot.save()
+
+                    if mentor:
+                        for resev in reservations:
+                            resev.mentor = mentor
+                            resev.save()
+                            print(resev)
+
+                    userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
+                    return Response(userSlotSerializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request: Request, uniqueID) -> Response:
             if uniqueID:
@@ -724,13 +914,137 @@ class UserPreferenceSlotViews(APIView):
             return Response({"error": "User Preference Slot uniqueID needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ComputerViews(APIView):
+    """All Computer Reservations Views"""
+    #
+    # authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # # add admin permission levels
+    # permission_classes = [permissions.IsAuthenticated]
 
+    def post(self, request: Request) -> Response:
+            serializer = serializers.CreateComputerSerializer(data=request.data)
+            lib = None
+            if serializer.is_valid():
+                library = serializer.validated_data["library"]
+                name = serializer.validated_data["name"]
+                key = serializer.validated_data["key"]
+                ip_address = serializer.validated_data["ip_address"]
+                notes = serializer.validated_data["notes"]
+
+                try:
+                    lib = Library.objects.get(pk=library)
+                except User.DoesNotExist:
+                    return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                computer = Computer.objects.create(library=lib, name=name, key=key, ip_address=ip_address, notes=notes)
+                computer.save()
+                computerSerializer = serializers.ComputerSerializer(computer, many=False)
+                return Response(computerSerializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request: Request, uniqueID) -> Response:
+            serializer = serializers.UpdateComputerSerializer(data=request.data)
+            computer = {}
+            reservations = []
+            if uniqueID == "" or uniqueID == None:
+                    return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                try:
+                    computer = Computer.objects.get(uniqueID=uniqueID)
+                except UserPreferenceSlot.DoesNotExist:
+                    return Response({"error": "Computer with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                if serializer.is_valid():
+                    name = serializer.validated_data["name"]
+                    key = serializer.validated_data["key"]
+                    ip_address = serializer.validated_data["ip_address"]
+                    notes = serializer.validated_data["notes"]
+                    is_down = serializer.validated_data["is_down"]
+                    email = serializer.validated_data["email"]
+
+                    name = None
+                    key = None
+                    ip_address = None
+                    notes = None
+                    is_down = None
+                    email = None
+
+                    try:
+                        name = serializer.validated_data["name"]
+                    except KeyError:
+                        name = None
+
+                    try:
+                        key = serializer.validated_data["key"]
+                    except KeyError:
+                        key = None
+
+                    try:
+                        email = serializer.validated_data["email"]
+                    except KeyError:
+                        email = None
+
+                    try:
+                        ip_address = serializer.validated_data["ip_address"]
+                    except KeyError:
+                        ip_address = None
+
+                    try:
+                        notes = serializer.validated_data["notes"]
+                    except KeyError:
+                        notes = None
+
+                    try:
+                        is_down = serializer.validated_data["is_down"]
+                    except KeyError:
+                        is_down = None
+
+
+
+                    if name:
+                        computer.name = name
+
+                    if key:
+                        computer.key = key
+
+                    if ip_address:
+                        computer.ip_address = ip_address
+
+                    if notes:
+                        computer.notes = notes
+
+                    if is_down:
+                        computer.is_down = is_down
+
+                    if email:
+                        computer.email = email
+
+                    computer.save()
+
+
+                    compSerializer = serializers.ComputerSerializer(computer, many=False)
+                    return Response(compSerializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, uniqueID) -> Response:
+            if uniqueID:
+                computer = {}
+                try:
+                    computer = Computer.objects.get(uniqueID=uniqueID)
+                except Computer.DoesNotExist:
+                    return Response({"error": "Computer with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                computer.delete()
+
+                return Response({"msg":"Computer deleted successfully."}, status=status.HTTP_200_OK)
+            return Response({"error": "Computer uniqueID needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ComputerReservationViews(APIView):
     """All Computer Reservations Views"""
 
-    #authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
@@ -791,52 +1105,39 @@ class ComputerReservationViews(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request: Request) -> Response:
-            serializer = serializers.UpdateUserPreferenceSlotSerializer(data=request.data)
+            serializer = serializers.UpdateComputerReservationSerializer(data=request.data)
             if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
-                student = serializer.validated_data["student"]
-                mentor = serializer.validated_data["mentor"]
-                reserved_slot = serializer.validated_data["reserved_slot"]
-                start_time = serializer.validated_data["start_time"]
-                end_time = serializer.validated_data["end_time"]
-                start_recurring = serializer.validated_data["start_recurring"]
-                end_recurring = serializer.validated_data["end_recurring"]
-                is_recurring = serializer.validated_data["is_recurring"]
-                transcript_file = serializer.validated_data["transcript_file"]
-
-                meetingID = serializer.validated_data["meetingID"]
-                conferenceURL = serializer.validated_data["conferenceURL"]
-                reserve_status = serializer.validated_data["reserve_status"]
-                mentor_attended = serializer.validated_data["mentor_attended"]
-                student_attended = serializer.validated_data["student_attended"]
-
-                computerReservation = {}
+                uniqueID = serializer.validated_data["unique_id"]
 
                 try:
-                    computerReservation = ComputerReservation.objects.get(pk=computer_slot)
+                    computerReservation = ComputerReservation.objects.get(uniqueID=uniqueID)
                 except ComputerReservation.DoesNotExist:
                     return Response({"error": "ComputerReservation with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                computerReservation.student = student
-                computerReservation.mentor = mentor
-                computerReservation.reserved_slot = reserved_slot
-                computerReservation.computer = computer
-                computerReservation.start_time = start_time
-                computerReservation.end_time = end_time
-                computerReservation.start_recurring = start_recurring
-                computerReservation.end_recurring = end_recurring
-                computerReservation.is_recurring = is_recurring
-                computerReservation.transcript_file = transcript_file
-                computerReservation.meetingID = meetingID
-                computerReservation.conferenceURL = conferenceURL
-                computerReservation.reserve_status = reserve_status
-                computerReservation.mentor_attended = mentor_attended
-                computerReservation.student_attended = student_attended
+                computerSlotSerializer = serializers.ComputerReservationSerializer(computerReservation, data=request.data, partial=True)
+                if computerSlotSerializer.is_valid():
+                    student_attended = serializer.validated_data.get('student_attended')
+                    mentor_attended = serializer.validated_data.get('mentor_attended')
+                    start_time = computerReservation.start_time
+                    current_date = timezone.now()
+                    #print(start_time)
+                    #print(current_date)
+                    time_diff = start_time - current_date
+                    #print(time_diff)
+                    if student_attended or mentor_attended:
+                        if time_diff < timedelta(hours=1):
+                            print("time_diff < 1 hour")
+                            computerSlotSerializer.save()
+                            return Response(computerSlotSerializer.data, status=status.HTTP_200_OK)
+                        else:
+                            print("time_diff > 1 hour")
+                            return Response({"message": "ComputerReservation attendence could not be updated."}, status=status.HTTP_200_OK)
+                    else:
+                        computerSlotSerializer.save()
+                        return Response(computerSlotSerializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "ComputerReservation could not be updated."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                computerReservation.save()
-
-                computerSlotSerializer = serializers.ComputerReservationSerializer(computerReservation, many=False)
-                return Response(computerSlotSerializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request: Request) -> Response:
@@ -860,7 +1161,7 @@ class ComputerReservationViews(APIView):
 class BookComputerReservationViews(APIView):
     """All Computer Reservations Views"""
 
-    #authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
     # add admin permission levels
     permission_classes = [permissions.IsAuthenticated]
 
@@ -889,6 +1190,16 @@ class BookComputerReservationViews(APIView):
                     mentorUser = User.objects.get(pk=mentor)
                 except User.DoesNotExist:
                     return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+                try:
+                    mentorProfile = MentorProfile.objects.get(user=mentorUser.pk)
+                except MentorProfile.DoesNotExist:
+                    return Response({"error": "Mentor Profile with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                if mentorProfile.approval_status != "Approved":
+                    return Response({"error": "You have not been approved to book sessions. Please wait unil we've approved your profile."}, status=status.HTTP_400_BAD_REQUEST)
+
 
                 try:
                     userPreferenceSlot = UserPreferenceSlot.objects.get(uniqueID=uniqueID)

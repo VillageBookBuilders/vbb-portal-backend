@@ -57,7 +57,7 @@ class MentorProfile(models.Model):
         NOT_REVIEWED = "Not Reviewed", ("Not Reviewed")
         REJECTED = "Rejected", ("Rejected")
 
-    assigned_library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True)
+    assigned_library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True, blank=True)
     careers = models.ManyToManyField(Career, related_name="+")
     mentoring_languages = models.ManyToManyField(Language, related_name="+")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
@@ -113,10 +113,28 @@ class LibrarianProfile(models.Model):
         return f"Librarian Profile for {self.user}"
 
 
+class AdvisorProfile(models.Model):
+    """
+    Librarian profile for a user
+    """
+
+    library = models.ForeignKey(Library, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+
+    def __str__(self) -> str:
+        return f"Advisor Profile for {self.user}"
+
 class StudentProfile(models.Model):
     """
     Student profile for a user
     """
+
+    class StudentApprovalStatus(models.TextChoices):
+        APPROVED = "Approved", ("Approved")
+        NOT_REVIEWED = "Not Reviewed", ("Not Reviewed")
+        REJECTED = "Rejected", ("Rejected")
+
 
     assigned_library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True)
     careers_of_interest = models.ManyToManyField(Career, related_name="+")
@@ -125,6 +143,13 @@ class StudentProfile(models.Model):
     subjects = models.ManyToManyField(Subject, related_name="+")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
+
+
+    approval_status = models.CharField(
+        max_length=50,
+        choices=StudentApprovalStatus.choices,
+        default=StudentApprovalStatus.NOT_REVIEWED,
+    )
 
     family_status = models.CharField(_("Family Status"), blank=True, max_length=255)
     family_support_level =  models.IntegerField(choices=FAMILY_SUPPORT_CHOICES, null=True, default=0)

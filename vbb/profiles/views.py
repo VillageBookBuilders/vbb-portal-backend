@@ -130,7 +130,7 @@ class MentorSignUp(APIView):
             send_mail(
                 "Village Book Builders - Please confirm your email",
                 body,
-                "chris@myrelaytech.com",
+                "mentor@villagebookbuilders.org",
                 [user.email],
             )
             return Response(status=status.HTTP_201_CREATED)
@@ -169,6 +169,7 @@ class MentorConfirmationEmailViewSet(APIView):
             user = User.objects.get(id=decoded_token.get("user_id"))
             user.is_email_verified = True
             user.is_active = True
+            user.role = 2
             user.save()
 
             return Response(
@@ -271,7 +272,109 @@ class MentorProfileViewSet(APIView):
         return Response(status=status.HTTP_201_CREATED, data=serialized_user.data)
 
 
+class ApproveStudentViewSet(APIView):
+    """
+    Mentor Profile Views from Rest Framework
+    """
 
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        """
+        Approve Student form
+        example data = {
+
+        }
+        """
+        user = request.user
+
+        library = {}
+        studentProfile = None
+
+        student_id = request.data.get("student_id", None)
+        stat = request.data.get("status", None)
+
+
+        try:
+            student = User.objects.get(pk=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            studentProfile = StudentProfile.objects.get(user=student_id)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "StudentProfile with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if stat == "approved":
+            studentProfile.approval_status = 'Approved'
+        elif stat == "not-reviewed":
+            studentProfile.approval_status = 'Not Reviewed'
+        elif stat == "rejected":
+            studentProfile.approval_status = 'Rejected'
+        else:
+            return Response({"error": "Status provided not a valid status."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        studentProfile.save()
+
+        serialized_user = UserSerializer(
+            user,
+            context={"request": request},
+        )
+        return Response({"user": serialized_user.data},status=status.HTTP_201_CREATED)
+
+class ApproveMentorViewSet(APIView):
+    """
+    Mentor Profile Views from Rest Framework
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        """
+        Approve Mentor form
+        example data = {
+
+        }
+        """
+        user = request.user
+
+        library = {}
+        mentorProfile = None
+
+        mentor_id = request.data.get("mentor_id", None)
+        stat = request.data.get("status", None)
+
+
+        try:
+            mentor = User.objects.get(pk=mentor_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            mentorProfile = MentorProfile.objects.get(user=mentor)
+        except MentorProfile.DoesNotExist:
+            return Response({"error": "StudentProfile with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if stat == "approved":
+            mentorProfile.approval_status = 'Approved'
+        elif stat == "not-reviewed":
+            mentorProfile.approval_status = 'Not Reviewed'
+        elif stat == "rejected":
+            mentorProfile.approval_status = 'Rejected'
+        else:
+            return Response({"error": "Status provided not a valid status."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        mentorProfile.save()
+
+        serialized_user = UserSerializer(
+            user,
+            context={"request": request},
+        )
+        return Response({"user": serialized_user.data},status=status.HTTP_201_CREATED)
 
 
 class StudentSignUp(APIView):
@@ -338,7 +441,7 @@ class StudentSignUp(APIView):
 
 
         try:
-            user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_student=True, username=username)
+            user = User.objects.create(first_name=first_name, last_name=last_name,name=name,  is_student=True, username=username, role=1)
             user.set_password(password)
             user.save()
 
