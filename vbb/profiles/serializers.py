@@ -128,7 +128,8 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "grade_level",
             "bio",
             "is_onboarded",
-            "is_active"
+            "is_active",
+            "approval_status"
             # the below are fields only for admin level
             # "is_active",
             # "is_verified",

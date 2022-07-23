@@ -402,7 +402,6 @@ class RetrieveLibraryStudentPreferencesViews(APIView):
             return Response({"error": "Library uniqueID needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class RetrieveUserPreferenceSlotViews(APIView):
     """All User Preference Slot Views"""
 
@@ -507,7 +506,6 @@ class RetrieveComputerReservationViews(APIView):
         return Response(reservationSerializer.data, status=status.HTTP_200_OK)
 
 
-
 class UserPreferenceSlotViews(APIView):
     """All User Preference Slot Views"""
 
@@ -572,12 +570,23 @@ class UserPreferenceSlotViews(APIView):
                 availableSlot = {}
 
 
-                studentObj = None
+                studentProfileObj = None
 
                 try:
                     studentObj = User.objects.get(pk=int(student))
                 except User.DoesNotExist:
                     return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+                try:
+                    studentProfileObj = StudentProfile.objects.get(user=studentObj)
+                except StudentProfile.DoesNotExist:
+                    return Response({"error": "StudentProfile with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+                if studentProfileObj.approval_status != "Approved":
+                    return Response({"error": "You are not approved yet."}, status=status.HTTP_400_BAD_REQUEST)
 
 
                 try:
@@ -1239,3 +1248,344 @@ class BookComputerReservationViews(APIView):
                 computerSlotSerializer = serializers.ComputerReservationWithUserSerializer(activeComputerReservations, many=True)
                 return Response(computerSlotSerializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LibraryMentorViews(APIView):
+    """All Computer Reservations Views"""
+    #
+    # authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # # add admin permission levels
+    # permission_classes = [permissions.IsAuthenticated]
+
+    # def patch(self, request: Request, uniqueID) -> Response:
+    #         serializer = serializers.UpdateComputerSerializer(data=request.data)
+    #         computer = {}
+    #         reservations = []
+    #         if uniqueID == "" or uniqueID == None:
+    #                 return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+    #         else:
+    #             try:
+    #                 computer = Computer.objects.get(uniqueID=uniqueID)
+    #             except UserPreferenceSlot.DoesNotExist:
+    #                 return Response({"error": "Computer with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #             if serializer.is_valid():
+    #                 name = serializer.validated_data["name"]
+    #                 key = serializer.validated_data["key"]
+    #                 ip_address = serializer.validated_data["ip_address"]
+    #                 notes = serializer.validated_data["notes"]
+    #                 is_down = serializer.validated_data["is_down"]
+    #                 email = serializer.validated_data["email"]
+    #
+    #                 name = None
+    #                 key = None
+    #                 ip_address = None
+    #                 notes = None
+    #                 is_down = None
+    #                 email = None
+    #
+    #                 try:
+    #                     name = serializer.validated_data["name"]
+    #                 except KeyError:
+    #                     name = None
+    #
+    #                 try:
+    #                     key = serializer.validated_data["key"]
+    #                 except KeyError:
+    #                     key = None
+    #
+    #                 try:
+    #                     email = serializer.validated_data["email"]
+    #                 except KeyError:
+    #                     email = None
+    #
+    #                 try:
+    #                     ip_address = serializer.validated_data["ip_address"]
+    #                 except KeyError:
+    #                     ip_address = None
+    #
+    #                 try:
+    #                     notes = serializer.validated_data["notes"]
+    #                 except KeyError:
+    #                     notes = None
+    #
+    #                 try:
+    #                     is_down = serializer.validated_data["is_down"]
+    #                 except KeyError:
+    #                     is_down = None
+    #
+    #
+    #
+    #                 if name:
+    #                     computer.name = name
+    #
+    #                 if key:
+    #                     computer.key = key
+    #
+    #                 if ip_address:
+    #                     computer.ip_address = ip_address
+    #
+    #                 if notes:
+    #                     computer.notes = notes
+    #
+    #                 if is_down:
+    #                     computer.is_down = is_down
+    #
+    #                 if email:
+    #                     computer.email = email
+    #
+    #                 computer.save()
+    #
+    #
+    #                 compSerializer = serializers.ComputerSerializer(computer, many=False)
+    #                 return Response(compSerializer.data, status=status.HTTP_200_OK)
+    #             else:
+    #                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, id) -> Response:
+            if id:
+                user = {}
+                prof = {}
+                try:
+                    user = User.objects.get(pk=id)
+                except User.DoesNotExist:
+                    return Response({"error": "User with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                try:
+                    prof = MentorProfile.objects.get(user=user)
+                except MentorProfile.DoesNotExist:
+                    return Response({"error": "MentorProfile with that provided id could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                user.delete()
+                prof.delete()
+
+                return Response({"msg":"User removed successfully."}, status=status.HTTP_200_OK)
+            return Response({"error": "User ID needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LibraryStudentViews(APIView):
+    """All Computer Reservations Views"""
+    #
+    # authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # # add admin permission levels
+    # permission_classes = [permissions.IsAuthenticated]
+
+    # def patch(self, request: Request, uniqueID) -> Response:
+    #         serializer = serializers.UpdateComputerSerializer(data=request.data)
+    #         computer = {}
+    #         reservations = []
+    #         if uniqueID == "" or uniqueID == None:
+    #                 return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+    #         else:
+    #             try:
+    #                 computer = Computer.objects.get(uniqueID=uniqueID)
+    #             except UserPreferenceSlot.DoesNotExist:
+    #                 return Response({"error": "Computer with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #             if serializer.is_valid():
+    #                 name = serializer.validated_data["name"]
+    #                 key = serializer.validated_data["key"]
+    #                 ip_address = serializer.validated_data["ip_address"]
+    #                 notes = serializer.validated_data["notes"]
+    #                 is_down = serializer.validated_data["is_down"]
+    #                 email = serializer.validated_data["email"]
+    #
+    #                 name = None
+    #                 key = None
+    #                 ip_address = None
+    #                 notes = None
+    #                 is_down = None
+    #                 email = None
+    #
+    #                 try:
+    #                     name = serializer.validated_data["name"]
+    #                 except KeyError:
+    #                     name = None
+    #
+    #                 try:
+    #                     key = serializer.validated_data["key"]
+    #                 except KeyError:
+    #                     key = None
+    #
+    #                 try:
+    #                     email = serializer.validated_data["email"]
+    #                 except KeyError:
+    #                     email = None
+    #
+    #                 try:
+    #                     ip_address = serializer.validated_data["ip_address"]
+    #                 except KeyError:
+    #                     ip_address = None
+    #
+    #                 try:
+    #                     notes = serializer.validated_data["notes"]
+    #                 except KeyError:
+    #                     notes = None
+    #
+    #                 try:
+    #                     is_down = serializer.validated_data["is_down"]
+    #                 except KeyError:
+    #                     is_down = None
+    #
+    #
+    #
+    #                 if name:
+    #                     computer.name = name
+    #
+    #                 if key:
+    #                     computer.key = key
+    #
+    #                 if ip_address:
+    #                     computer.ip_address = ip_address
+    #
+    #                 if notes:
+    #                     computer.notes = notes
+    #
+    #                 if is_down:
+    #                     computer.is_down = is_down
+    #
+    #                 if email:
+    #                     computer.email = email
+    #
+    #                 computer.save()
+    #
+    #
+    #                 compSerializer = serializers.ComputerSerializer(computer, many=False)
+    #                 return Response(compSerializer.data, status=status.HTTP_200_OK)
+    #             else:
+    #                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, id) -> Response:
+            if id:
+                user = {}
+                prof = {}
+                try:
+                    user = User.objects.get(pk=id)
+                except User.DoesNotExist:
+                    return Response({"error": "User with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                try:
+                    prof = StudentProfile.objects.get(user=user)
+                except StudentProfile.DoesNotExist:
+                    return Response({"error": "StudentProfile with that provided id could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                user.delete()
+                prof.delete()
+
+                return Response({"msg":"User removed successfully."}, status=status.HTTP_200_OK)
+            return Response({"error": "User ID needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LibraryComputerReservationViews(APIView):
+    """All Computer Reservations Views"""
+    #
+    authentication_classes = (CsrfHTTPOnlySessionAuthentication, BasicAuthentication, JWTAuthentication)
+    # add admin permission levels
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request: Request, uniqueID) -> Response:
+            serializer = serializers.UpdateComputerReservationSerializer(data=request.data)
+            reservation = {}
+            if uniqueID == "" or uniqueID == None:
+                    return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                try:
+                    reservation = ComputerReservation.objects.get(uniqueID=uniqueID)
+                except ComputerReservation.DoesNotExist:
+                    return Response({"error": "ComputerReservation with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                if serializer.is_valid():
+                    # name = serializer.validated_data["name"]
+                    # mentor = serializer.validated_data["mentor"]
+                    # computer = serializer.validated_data["computer"]
+                    # start_time = serializer.validated_data["start_time"]
+                    # end_time = serializer.validated_data["end_time"]
+                    # conferenceURL = serializer.validated_data["conferenceURL"]
+                    #
+                    # name = None
+                    mentor = None
+                    computer = None
+                    start_time = None
+                    end_time = None
+                    conferenceURL = None
+
+                    # try:
+                    #     name = serializer.validated_data["name"]
+                    # except KeyError:
+                    #     name = None
+                    #
+                    try:
+                        mentor = serializer.validated_data["mentor"]
+                    except KeyError:
+                        mentor = None
+
+                    try:
+                        computer = serializer.validated_data["computer"]
+                    except KeyError:
+                        computer = None
+
+                    try:
+                        start_time = serializer.validated_data["start_time"]
+                        end_time = serializer.validated_data["end_time"]
+                    except KeyError:
+                        start_time = None
+                        end_time = None
+
+                    try:
+                        conferenceURL = serializer.validated_data["conferenceURL"]
+                    except KeyError:
+                        conferenceURL = None
+
+
+
+                    # if name:
+                    #     computer.name = name
+
+                    if mentor:
+
+                        try:
+                            mentorUser = User.objects.get(pk=mentor)
+                        except User.DoesNotExist:
+                            return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                        reservation.mentor = mentorUser
+
+                    if computer:
+
+
+                        try:
+                            computerAssigned = Computer.objects.get(pk=computer)
+                        except User.DoesNotExist:
+                            return Response({"error": "Computer with that provided id could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                        reservation.computer = computerAssigned
+
+                    if start_time:
+                        reservation.start_time = start_time
+
+                    if end_time:
+                        reservation.end_time = end_time
+
+                    if conferenceURL:
+                        reservation.conferenceURL = conferenceURL
+
+                    reservation.save()
+
+
+                    compReserveSerializer = serializers.ComputerReservationWithUserSerializer(reservation, many=False)
+                    return Response(compReserveSerializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, uniqueID) -> Response:
+            if uniqueID:
+                reservation = {}
+                try:
+                    reservation = ComputerReservation.objects.get(uniqueID=uniqueID)
+                except ComputerReservation.DoesNotExist:
+                    return Response({"error": "ComputerReservation with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                reservation.delete()
+
+                return Response({"msg":"ComputerReservation removed successfully."}, status=status.HTTP_200_OK)
+            return Response({"error": "UniqueID of computer reservation needs to be provided."}, status=status.HTTP_400_BAD_REQUEST)

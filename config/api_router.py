@@ -7,8 +7,8 @@ from vbb.language.views import LanguageViewSet
 from vbb.libraries.views import (LibraryViews, RetrieveLibraryStudentPreferencesViews,
 LibraryComputerSlotViews, UserPreferenceSlotViews,
 ComputerReservationViews, BookComputerReservationViews,
-ComputerViews, RetrieveUserPreferenceSlotViews,
-RetrieveComputerReservationViews,
+ComputerViews, RetrieveUserPreferenceSlotViews,LibraryComputerReservationViews,
+RetrieveComputerReservationViews, LibraryStudentViews, LibraryMentorViews,
 LibraryDetailViews, AnnouncementViews, RetrieveLibraryComputerViews, RetrieveLibraryStudentsViews, RetrieveLibraryMentorsViews)
 from vbb.profiles.views import (
     MentorConfirmationEmailViewSet,
@@ -64,7 +64,7 @@ urlpatterns = [
         ApproveStudentViewSet().as_view(),
     ),
     path(
-        "status/",
+        "complete-student-onboard/",
         StudentProfileViewSet().as_view(),
     ),
     path(
@@ -76,12 +76,24 @@ urlpatterns = [
         RetrieveLibraryComputerViews().as_view(),
     ),
 
+
     path(
-        "library/students/<str:uniqueID>",
+        "library/students/<int:id>",
+        LibraryStudentViews().as_view(),
+    ),
+
+    path(
+        "library/all-students/<str:uniqueID>",
         RetrieveLibraryStudentsViews().as_view(),
     ),
+
     path(
-        "library/mentors/<str:uniqueID>",
+        "library/mentors/<int:id>",
+        LibraryMentorViews().as_view(),
+    ),
+
+    path(
+        "library/all-mentors/<str:uniqueID>",
         RetrieveLibraryMentorsViews().as_view(),
     ),
     path(
@@ -102,6 +114,10 @@ urlpatterns = [
     ),
     path(
         "library/computer-reservations/<str:uniqueID>",
+        LibraryComputerReservationViews().as_view(),
+    ),
+    path(
+        "library/all-computer-reservations/<str:uniqueID>",
         RetrieveComputerReservationViews().as_view(),
     ),
     path(

@@ -457,7 +457,6 @@ class StudentSignUp(APIView):
             )
 
 
-
 class StudentProfileViewSet(APIView):
     """
     Student Profile Views from Rest Framework
