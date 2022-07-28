@@ -72,9 +72,9 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "djoser",
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
+    #'allauth',
+    #'allauth.account',
+    #'allauth.socialaccount',
 ]
 
 LOCAL_APPS = [
@@ -101,7 +101,7 @@ MIGRATION_MODULES = {"sites": "vbb.contrib.sites.migrations"}
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "users.backends.EmailBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    #"allauth.account.auth_backends.AuthenticationBackend",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
