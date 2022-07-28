@@ -297,18 +297,19 @@ class LibraryComputerSlotViews(APIView):
     def post(self, request: Request) -> Response:
             serializer = serializers.CreateLibrarySlotSerializer(data=request.data)
             if serializer.is_valid():
-                start_time = serializer.validated_data["start_time"]
-                end_time = serializer.validated_data["end_time"]
-                start_recurring = serializer.validated_data["start_recurring"]
-                end_recurring = serializer.validated_data["end_recurring"]
-                day = serializer.validated_data["day"]
+                # start_time = serializer.validated_data["start_time"]
+                # end_time = serializer.validated_data["end_time"]
+                # start_recurring = serializer.validated_data["start_recurring"]
+                # end_recurring = serializer.validated_data["end_recurring"]
+                # day = serializer.validated_data["day"]
                 library = serializer.validated_data["library"]
 
                 try:
-                    library = Library.objects.get(pk=library)
+                    library = Library.objects.get(uniqueID=library)
                 except Library.DoesNotExist:
                     return Response({"error": "Library with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
+                serializer.validated_data["library"] = library
                 #Add existting time range slot exception
 
                 libSlot = {}
@@ -319,7 +320,7 @@ class LibraryComputerSlotViews(APIView):
                 return Response(libSlotSerializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request: Request) -> Response:
+    def patch(self, request: Request, uniqueID) -> Response:
             serializer = serializers.UpdateLibrarySlotSerializer(data=request.data)
             if serializer.is_valid():
                 uniqueID = serializer.validated_data["uniqueID"]
@@ -349,20 +350,17 @@ class LibraryComputerSlotViews(APIView):
                 return Response(libSlotSerializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request: Request) -> Response:
-            serializer = serializers.UpdateLibrarySlotSerializer(data=request.data)
-            if serializer.is_valid():
-                uniqueID = serializer.validated_data["uniqueID"]
-                libSlot = {}
+    def delete(self, request: Request, uniqueID) -> Response:
+            if uniqueID == "" or uniqueID == None:
+                return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-                try:
-                    libSlot = LibraryComputerSlots.objects.get(uniqueID=uniqueID)
-                except LibraryComputerSlots.DoesNotExist:
-                    return Response({"error": "Library Slot with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                libSlot = LibraryComputerSlots.objects.get(uniqueID=uniqueID)
+            except LibraryComputerSlots.DoesNotExist:
+                return Response({"error": "Library Slot with that provided uniqueID could not be found."}, status=status.HTTP_404_NOT_FOUND)
 
-                libSlot.delete()
-                return Response({"msg":"Library Slot deleted successfully."}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            libSlot.delete()
+            return Response({"msg":"Library Slot deleted successfully."}, status=status.HTTP_200_OK)
 
 
 class RetrieveLibraryStudentPreferencesViews(APIView):
@@ -602,7 +600,7 @@ class UserPreferenceSlotViews(APIView):
 
                 try:
                     availableComputers = Computer.objects.filter(library=availableSlot.library)
-                except Computers.DoesNotExist:
+                except Computer.DoesNotExist:
                     return Response({"error": "Computers with that provided Computer Slot could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
                 if len(availableComputers) == 0:
@@ -617,7 +615,7 @@ class UserPreferenceSlotViews(APIView):
                 try:
                     allComputersReservations = ComputerReservation.objects.filter(start_time=start_time, end_time=end_time, computer__in=allComputersID)
                 except ComputerReservation.DoesNotExist:
-                    return Response({"error": "ComputerReservation with that provided Computer Slot could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "ComputerReservation with that provided timeslot taken already."}, status=status.HTTP_400_BAD_REQUEST)
 
                 print(allComputersID)
                 print(allComputersReservations)
@@ -820,6 +818,12 @@ class UserPreferenceSlotViews(APIView):
                 except UserPreferenceSlot.DoesNotExist:
                     return Response({"error": "UserPreferenceSlot with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
+                try:
+                    print(userSlot.computer_slot)
+                    availableSlot = LibraryComputerSlots.objects.get(pk=userSlot.computer_slot.pk)
+                except LibraryComputerSlots.DoesNotExist:
+                    return Response({"error": "LibraryComputerSlot with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
 
                 try:
                     reservations = ComputerReservation.objects.filter(reserved_slot=userSlot.pk)
@@ -875,6 +879,194 @@ class UserPreferenceSlotViews(APIView):
                     if mentor:
                         mentor = User.objects.get(pk=mentor)
                         userSlot.mentor = mentor
+
+                        if len(reservations) == 0:
+                            print('No reservations or mentor')
+
+                            try:
+                                studentObj = student
+                            except User.DoesNotExist:
+                                return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+                            try:
+                                availableComputers = Computer.objects.filter(library=availableSlot.library)
+                            except Computer.DoesNotExist:
+                                return Response({"error": "Computers with that provided Computer Slot could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                            if len(availableComputers) == 0:
+                                return Response({"error": "No Computers available to reserve."}, status=status.HTTP_400_BAD_REQUEST)
+
+                            allComputersID = []
+
+                            for computer in availableComputers:
+                                allComputersID.append(computer.pk)
+
+                            try:
+                                allComputersReservations = ComputerReservation.objects.filter(start_time=start_time, end_time=end_time, computer__in=allComputersID)
+                            except ComputerReservation.DoesNotExist:
+                                return Response({"error": "ComputerReservations with that provided timeslot taken already."}, status=status.HTTP_400_BAD_REQUEST)
+
+                            #userSlot = None
+                            userSlotSerializer = {}
+
+                            if len(allComputersReservations) == 0:
+                                #Create Multiple  Computer Reservations if Reccurring
+                                if start_recurring != None and end_recurring != None:
+
+                                    startSplit = start_time
+                                    startTz = start_time.split('T')[1]
+
+                                    endSplit = end_time
+                                    endTz = end_time.split('T')[1]
+
+                                    startRecSplit = start_recurring.split('T')[0]
+                                    startRecTz = start_recurring.split('T')[1]
+
+                                    endRecSplit = end_recurring.split('T')[0]
+                                    endRecTz = end_recurring.split('T')[1]
+
+                                    startRecurFormatted = datetime.strptime(startRecSplit, '%Y-%m-%d')
+                                    endRecurFormatted = datetime.strptime(endRecSplit, '%Y-%m-%d')
+
+                                    startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S%fZ')
+                                    endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S%fZ')
+
+                                    print(startFormatted)
+                                    print(endFormatted)
+
+                                    #Find Recurring Date Difference
+                                    recurr_diff = endRecurFormatted - startRecurFormatted
+                                    numberOfWeeks = recurr_diff.days // 7
+
+                                    #Find Recurring Date Difference
+                                    hour_diff = endFormatted - startFormatted
+                                    numOfSessionHours = hour_diff
+                                    print(numOfSessionHours)
+
+                                    computerReservationsList = []
+                                    #Make Reccurring Object Creation Logic
+                                    #Create the inital day of reservation
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4())
+                                    newComputerReserve.save()
+                                    computerReservationsList.append(newComputerReserve)
+
+                                    #Create the temporary computer reservation objects
+                                    date_tmp = startRecurFormatted
+                                    for week in range(0, numberOfWeeks):
+                                        print("Computer Reservation Created")
+                                        new_start_date = date_tmp + timedelta(days=7)
+                                        date_tmp = new_start_date
+                                        new_start_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, startFormatted.hour, startFormatted.minute)
+                                        new_end_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, endFormatted.hour, endFormatted.minute)
+                                        print(new_start_date_object)
+                                        print(new_end_date_object)
+                                        formattedStartDate =  new_start_date_object.strftime('%Y/%m/%d')
+                                        formattedEndDate = new_end_date_object.strftime('%Y/%m/%d')
+                                        print(formattedStartDate)
+                                        print(formattedEndDate)
+
+                                        newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4())
+                                        newComputerReserve.save()
+                                        computerReservationsList.append(newComputerReserve)
+
+
+                                    computerReserveSerializer = serializers.ComputerReservationSerializer(computerReservationsList, many=True)
+                                    print(computerReserveSerializer.data)
+
+                                else:
+                                    #Create Single Reservation Object
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4())
+                                    newComputerReserve.save()
+                                    computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
+                                    print(computerReserveSerializer.data)
+                            else:
+                                reservedComputers = []
+                                freeComputers = []
+
+                                for computer in allComputersReservations:
+                                    reservedComputers.append(computer.computer.pk)
+                                print(reservedComputers)
+
+                                for comp in allComputersID:
+                                    if comp not in reservedComputers:
+                                        freeComputers.append(comp)
+
+                                print(freeComputers)
+                                print("Reservations with computers found at this time")
+
+                                if len(freeComputers) <= 0:
+                                    return Response({"error": "No free computers at this time."}, status=status.HTTP_400_BAD_REQUEST)
+                                else:
+                                    selectedComputer = Computer.objects.get(pk=freeComputers[0])
+                                    if start_recurring != None and end_recurring != None:
+
+                                        startSplit = start_time
+                                        startTz = start_time.split('T')[1]
+
+                                        endSplit = end_time
+                                        endTz = end_time.split('T')[1]
+
+                                        startRecSplit = start_recurring.split('T')[0]
+                                        startRecTz = start_recurring.split('T')[1]
+
+                                        endRecSplit = end_recurring.split('T')[0]
+                                        endRecTz = end_recurring.split('T')[1]
+
+                                        startRecurFormatted = datetime.strptime(startRecSplit, '%Y-%m-%d')
+                                        endRecurFormatted = datetime.strptime(endRecSplit, '%Y-%m-%d')
+
+                                        startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S.%fZ')
+                                        endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+                                        print(startFormatted)
+                                        print(endFormatted)
+
+                                        #Find Recurring Date Difference
+                                        recurr_diff = endRecurFormatted - startRecurFormatted
+                                        numberOfWeeks = recurr_diff.days // 7
+
+                                        #Find Recurring Date Difference
+                                        hour_diff = endFormatted - startFormatted
+                                        numOfSessionHours = hour_diff
+                                        print(numOfSessionHours)
+
+                                        computerReservationsList = []
+                                        #Make Reccurring Object Creation Logic
+                                        #Create the inital day of reservation
+                                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentor, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4())
+                                        newComputerReserve.save()
+                                        computerReservationsList.append(newComputerReserve)
+
+                                        #Create the temporary computer reservation objects
+                                        date_tmp = startRecurFormatted
+                                        for week in range(0, numberOfWeeks):
+                                            print("Computer Reservation Created")
+                                            new_start_date = date_tmp + timedelta(days=7)
+                                            date_tmp = new_start_date
+                                            new_start_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, startFormatted.hour, startFormatted.minute)
+                                            new_end_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, endFormatted.hour, endFormatted.minute)
+                                            print(new_start_date_object)
+                                            print(new_end_date_object)
+                                            formattedStartDate =  new_start_date_object.strftime('%Y/%m/%d')
+                                            formattedEndDate = new_end_date_object.strftime('%Y/%m/%d')
+                                            print(formattedStartDate)
+                                            print(formattedEndDate)
+
+                                            newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=selectedComputer, transaction_id=uuid.uuid4())
+                                            newComputerReserve.save()
+                                            computerReservationsList.append(newComputerReserve)
+
+
+                                        computerReserveSerializer = serializers.ComputerReservationSerializer(computerReservationsList, many=True)
+                                        print(computerReserveSerializer.data)
+
+                                    else:
+                                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=selectedComputer, transaction_id=uuid.uuid4())
+                                        newComputerReserve.save()
+                                        computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
+                                        print(computerReserveSerializer.data)
+
 
                     if start_time:
                         userSlot.start_time = start_time

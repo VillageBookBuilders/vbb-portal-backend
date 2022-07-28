@@ -52,6 +52,10 @@ urlpatterns = [
         MentorProfileViewSet().as_view(),
     ),
     path(
+        "profile/mentor/",
+        MentorProfileViewSet().as_view(),
+    ),
+    path(
         "student-sign-up/",
         StudentSignUp().as_view(),
     ),

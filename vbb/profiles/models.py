@@ -8,6 +8,7 @@ from vbb.subjects.models import Subject, Genre
 from vbb.users.models import User
 from django.utils.translation import gettext_lazy as _
 
+MEET_PROVIDERS =  ((0, 'google'), (1, 'microsoft'), (2, 'zoom'), (3, 'other'), (4, 'none'))
 
 FAMILY_SUPPORT_CHOICES = (
   (1, 'Very supportive'),
@@ -63,6 +64,7 @@ class MentorProfile(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
     subjects = models.ManyToManyField(Subject, related_name="+")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    opportunities = models.ManyToManyField(Opportunity, related_name="+")
 
     # Soft requirement for creation but hard requirement for completion or registration
     application_video_url = models.TextField(null=True)
@@ -81,6 +83,10 @@ class MentorProfile(models.Model):
     bio = models.TextField(blank=True)
     how_found_us = models.CharField(max_length=1024, null=True, blank=True)
     is_onboarded = models.BooleanField(default=False)
+    canMeetConsistently = models.BooleanField(default=False)
+    crimesOrMisdemeanor = models.BooleanField(default=False)
+    crimesOrMisdemeanorResponses = models.TextField(null=True, blank=True)
+    meet_provider = models.IntegerField(choices=MEET_PROVIDERS, null=True, default=0)
 
     def __str__(self):
         return f"Mentor Profile for {self.user}"

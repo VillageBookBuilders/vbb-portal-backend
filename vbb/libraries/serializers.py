@@ -163,7 +163,7 @@ class CreateLibrarySlotSerializer(serializers.Serializer):
     start_recurring = serializers.CharField(required=False, max_length=1024)
     end_recurring = serializers.CharField(required=False, max_length=1024)
     day = serializers.IntegerField(required=True)
-    library = serializers.IntegerField(required=True)
+    library = serializers.CharField(required=False, max_length=1024)
 
 class UpdateLibrarySlotSerializer(serializers.Serializer):
     uniqueID = serializers.CharField(required=True, max_length=1024)
@@ -220,7 +220,7 @@ class CreateUserPreferenceSlotSerializer(serializers.Serializer):
 
 class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
     student = serializers.IntegerField(required=False)
-    mentor = serializers.IntegerField(required=False)
+    mentor = serializers.IntegerField(required=False, allow_null=True)
     lib_computer_slot = serializers.CharField(required=False)
     start_time = serializers.CharField(required=False, max_length=1024)
     end_time = serializers.CharField(required=False, max_length=1024)

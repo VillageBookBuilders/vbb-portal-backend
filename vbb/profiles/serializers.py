@@ -61,10 +61,7 @@ class OpportunitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Opportunity
-        fields = [
-            "id",
-            "name",
-        ]
+        fields = '__all__'
 
 
 class AdvisorProfileSerializer(serializers.ModelSerializer):
@@ -87,6 +84,7 @@ class MentorProfileSerializer(serializers.ModelSerializer):
     careers = CareerSerializer(many=True)
     subjects = SubjectSerializer(many=True)
     mentoring_languages = LanguageSerializer(many=True)
+    opportunities = OpportunitySerializer(many=True)
     organization = OrganizationSerializer(many=False)
 
     class Meta:
@@ -103,7 +101,14 @@ class MentorProfileSerializer(serializers.ModelSerializer):
             "mentoring_languages",
             "approval_status",
             "is_onboarded",
-            "organization"
+            "organization",
+            "bio",
+            "application_video_url",
+            "canMeetConsistently",
+            "crimesOrMisdemeanor",
+            "crimesOrMisdemeanorResponses",
+            "meet_provider",
+            "opportunities"
         ]
 
 
@@ -129,7 +134,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "bio",
             "is_onboarded",
             "is_active",
-            "approval_status"
+            "approval_status",
             # the below are fields only for admin level
             # "is_active",
             # "is_verified",
@@ -143,6 +148,7 @@ class MentorProfileWithUserSerializer(serializers.ModelSerializer):
     subjects = SubjectSerializer(many=True)
     mentoring_languages = LanguageSerializer(many=True)
     organization = OrganizationSerializer(many=False)
+    opportunities = OpportunitySerializer(many=True)
 
     class Meta:
         model = MentorProfile
@@ -159,7 +165,12 @@ class MentorProfileWithUserSerializer(serializers.ModelSerializer):
             "mentoring_languages",
             "approval_status",
             "is_onboarded",
-            "organization"
+            "organization",
+            "canMeetConsistently",
+            "crimesOrMisdemeanor",
+            "crimesOrMisdemeanorResponses",
+            "meet_provider",
+            "opportunities"
             # the below are fields only for admin level
             # "is_active",
             # "is_verified",

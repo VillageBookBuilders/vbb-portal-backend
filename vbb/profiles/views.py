@@ -209,6 +209,7 @@ class MentorProfileViewSet(APIView):
         print(data)
         career_ids = data.get("careers", [])
         mentoring_language_ids = data.get("mentoring_languages", [])
+        opportunities = data.get("opportunities", [])
         subject_ids = data.get("subjects", [])
         application_video_url = data.get("application_video_url", "")
         interests = data.get("interests", "")
@@ -218,6 +219,9 @@ class MentorProfileViewSet(APIView):
         is_of_age = data.get("is_of_age", False)
         time_zone = data.get("timezone", "")
         date_of_birth = data.get("date_of_birth")
+        crimesOrMisdemeanorResponses = data.get("crimesOrMisdemeanorResponses")
+
+
         # Look up Organization by corp code
         # try:
         #     org = Organization.objects.get(corporate_code=corporate_code)
@@ -259,9 +263,11 @@ class MentorProfileViewSet(APIView):
             },
         )
 
-        mentor_profile.careers.add(*career_ids)
-        mentor_profile.mentoring_languages.add(*mentoring_language_ids)
-        mentor_profile.subjects.add(*subject_ids)
+        print(opportunities)
+        mentor_profile.opportunities.set(opportunities)
+        mentor_profile.careers.set(career_ids)
+        mentor_profile.mentoring_languages.set(mentoring_language_ids)
+        mentor_profile.subjects.set(subject_ids)
         mentor_profile.is_onboarded = True
         mentor_profile.save()
 
