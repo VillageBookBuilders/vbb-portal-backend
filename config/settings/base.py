@@ -450,6 +450,8 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_LINK = FRONTEND_URL + "/register/confirm/"
 
 CORS_ALLOWED_ORIGINS = [
+    "https://app.villagebookbuilders.org",
+    "http://app.villagebookbuilders.org",
     "https://portal.villagebookbuilders.org",
     "https://portal.villagebookbuilders.org",
     "https://test.villagebookbuilders.org",
