@@ -131,13 +131,17 @@ class MentorSignUp(APIView):
               from_email='mentor@villagebookbuilders.org',
               to=[user.email],
             )
-            msg.template_id = "your-dynamic-template-id"
+            msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
             msg.dynamic_template_data = {
               "first_name": user.first_name,
               "verification_link":link
             }
 
-            msg.send(fail_silently=False)
+            try:
+                msg.send(fail_silently=False)
+            except Exception as e:
+                print(e) 
+
 
             #body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
             # send_mail(
