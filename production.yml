@@ -11,6 +11,10 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: vbb_production_django
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     platform: linux/x86_64
     depends_on:
       - postgres
