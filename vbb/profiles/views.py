@@ -4,7 +4,7 @@ from datetime import datetime
 import jwt
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, send_mail
 from django.db import IntegrityError
 from django.http.response import HttpResponseRedirect
 from rest_framework import permissions, status
@@ -127,46 +127,46 @@ class MentorSignUp(APIView):
             # amazon simple email service
             # send_mail("subject", "message", "from_email", ["to_list"])
 
-            msg = EmailMessage(
-              from_email='mentor@villagebookbuilders.org',
-              to=[user.email],
-            )
-            msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
-            msg.dynamic_template_data = {
-              "first_name": user.first_name,
-              "verification_link": link
-            }
-            msg.subject = "Hll"
-            msg.custom_args = {
-              "to": [
-                {
-                  "email": user.email
-                }
-              ],
-              "subject": "YOUR SUBJECT LINE GOES HERE",
-              "dynamic_template_data":{
-                  "first_name": user.first_name,
-                  "verification_link":link
-              },
-              "template_id": "d-e5a5f3e91ebe4621a24355673ae255f2"
-            }
-
-            print(msg.custom_args)
-            # print(msg.dynamic_template_data)
-
-            try:
-                msg.send(fail_silently=False)
-            except Exception as e:
-                print(e)
-
-
-            #body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
-            # send_mail(
-            #     "Village Book Builders - Please confirm your email",
-            #     body,
-            #     "mentor@villagebookbuilders.org",
-            #     [user.email],
+            # msg = EmailMessage(
+            #   from_email='mentor@villagebookbuilders.org',
+            #   to=[user.email],
             # )
+            # msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
+            # msg.dynamic_template_data = {
+            #   "first_name": user.first_name,
+            #   "verification_link": link
+            # }
+            # msg.subject = "Hll"
+            # msg.custom_args = {
+            #   "to": [
+            #     {
+            #       "email": user.email
+            #     }
+            #   ],
+            #   "subject": "YOUR SUBJECT LINE GOES HERE",
+            #   "dynamic_template_data":{
+            #       "first_name": user.first_name,
+            #       "verification_link":link
+            #   },
+            #   "template_id": "d-e5a5f3e91ebe4621a24355673ae255f2"
+            # }
+            #
+            # print(msg.custom_args)
+            # # print(msg.dynamic_template_data)
+            #
+            # try:
+            #     msg.send(fail_silently=False)
+            # except Exception as e:
+            #     print(e)
+
+
+            body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
+            send_mail(
+                "Village Book Builders - Please confirm your email",
+                body,
+                "mentor@villagebookbuilders.org",
+                [user.email],
+            )
             return Response(status=status.HTTP_201_CREATED, data={"message": "Email verification link sent successfully"})
 
         except IntegrityError:
