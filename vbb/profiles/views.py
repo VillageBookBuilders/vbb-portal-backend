@@ -137,10 +137,12 @@ class MentorSignUp(APIView):
               "verification_link":link
             }
 
+            print(msg.dynamic_template_data)
+
             try:
                 msg.send(fail_silently=False)
             except Exception as e:
-                print(e) 
+                print(e)
 
 
             #body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
