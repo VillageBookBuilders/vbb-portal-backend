@@ -134,10 +134,25 @@ class MentorSignUp(APIView):
             msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
             msg.dynamic_template_data = {
               "first_name": user.first_name,
-              "verification_link":link
+              "verification_link": link
+            }
+            msg.subject = "Hll"
+            msg.custom_args = {
+              "to": [
+                {
+                  "email": user.email
+                }
+              ],
+              "subject": "YOUR SUBJECT LINE GOES HERE",
+              "dynamic_template_data":{
+                  "first_name": user.first_name,
+                  "verification_link":link
+              },
+              "template_id": "d-e5a5f3e91ebe4621a24355673ae255f2"
             }
 
-            print(msg.dynamic_template_data)
+            print(msg.custom_args)
+            # print(msg.dynamic_template_data)
 
             try:
                 msg.send(fail_silently=False)
