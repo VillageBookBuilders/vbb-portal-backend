@@ -4,7 +4,7 @@ from datetime import datetime
 import jwt
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.db import IntegrityError
 from django.http.response import HttpResponseRedirect
 from rest_framework import permissions, status
@@ -126,14 +126,31 @@ class MentorSignUp(APIView):
                 print(f"email link: {link}")
             # amazon simple email service
             # send_mail("subject", "message", "from_email", ["to_list"])
-            body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
-            send_mail(
-                "Village Book Builders - Please confirm your email",
-                body,
-                "mentor@villagebookbuilders.org",
-                [user.email],
+
+            msg = EmailMessage(
+              from_email='mentor@villagebookbuilders.org',
+              to=[user.email],
             )
-            return Response(status=status.HTTP_201_CREATED)
+            msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
+            msg.dynamic_template_data = {
+              "first_name": user.first_name,
+              "verification_link":link
+            }
+
+            try:
+                msg.send(fail_silently=False)
+            except Exception as e:
+                print(e) 
+
+
+            #body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
+            # send_mail(
+            #     "Village Book Builders - Please confirm your email",
+            #     body,
+            #     "mentor@villagebookbuilders.org",
+            #     [user.email],
+            # )
+            return Response(status=status.HTTP_201_CREATED, data={"message": "Email verification link sent successfully"})
 
         except IntegrityError:
             return Response(

@@ -17,7 +17,13 @@ from email.mime.multipart import MIMEMultipart
 import re
 import random
 import string
+import environ
+import json
+import base64
+from pathlib import Path
+
 # from dateutil.relativedelta import relativedelta
+ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
 
 class google_apis:
@@ -34,6 +40,8 @@ class google_apis:
   __mentor_cred = ''
 
   def __init__(self):
+    env = environ.Env()
+
     # the proper scopes are needed to access specific Google APIs
     # see https://developers.google.com/identity/protocols/oauth2/scopes
     scopes = [
@@ -44,9 +52,24 @@ class google_apis:
     ]
 
     dirname = os.path.dirname(__file__)
+
+    env.read_env(str(ROOT_DIR / ".env"))
+
+    serviceKey = env("GOOGLE_SERVICE_KEY", default="")
+
+    print('Key:')
+    #print(serviceKey)
+
+    decoded = base64.b64decode(serviceKey).decode('utf-8')
+    #print(decoded)
+
+    fileObj = json.loads(decoded)
+    print(fileObj)
+
+    #print(file)
     SERVICE_ACCOUNT_FILE = os.path.join(dirname, "service-account.json")
-    credentials = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=scopes)
+    credentials = service_account.Credentials.from_service_account_info(
+            fileObj, scopes=scopes)
     self.__webdev_cred = credentials.with_subject(
         'webdevelopment@villagebookbuilders.org')
     self.__mentor_cred = credentials.with_subject(
@@ -335,7 +358,7 @@ def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, da
             mentorEmail,
             directorEmail,
             dateStart, dateEnd,
-            "c_oha2uv7abp2vs6jlrl96aeoje8@group.calendar.google.com",
+            "c_nqd1aak2qnc6j4ejejo787qk1o@group.calendar.google.com",
             location,
             "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
     return eventObj
