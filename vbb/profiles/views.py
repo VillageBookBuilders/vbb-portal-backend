@@ -160,7 +160,7 @@ class MentorSignUp(APIView):
             #     print(e)
 
 
-            body = f"Welcome to Village Book Builders! Please confirm your email by clicking this link: {link}"
+            body = f"Welcome to Village Book Builders! Please confirm your email by copy and pasting this link in your browser: {link}"
             send_mail(
                 "Village Book Builders - Please confirm your email",
                 body,
