@@ -29,5 +29,5 @@ class MentorProfileAdmin(auth_admin.MentorProfileAdmin):
     #     ),
     #     (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     # )
-    list_display = ["user"]
-    search_fields = []
+    list_display = ["user.first_name", "user.last_name"]
+    search_fields = ["user.first_name", "user.last_name"]
