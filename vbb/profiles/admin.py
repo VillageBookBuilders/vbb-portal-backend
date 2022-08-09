@@ -29,7 +29,7 @@ class MentorProfileAdmin(admin.ModelAdmin):
     #     (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     # )
     list_display = ["get_first_name", "approval_status"]
-    search_fields = ["get_first_name"]
+    search_fields = ["user__first_name"]
 
     @admin.display(ordering='user__first_name', description='user first name')
     def get_first_name(self, obj):
