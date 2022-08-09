@@ -13,7 +13,7 @@ class LibraryComputerSlotsAdmin(admin.ModelAdmin):
 
     list_display = ["get_library", "day", "start_time", "end_time", "start_recurring" ,"end_recurring"]
     search_fields = ["library__name"]
-    #list_filter = ("day")
+    list_filter = ("library__name", "day")
 
     @admin.display(ordering='library__name', description='library')
     def get_library(self, obj):
@@ -25,7 +25,7 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
 
     list_display = ["is_recurring"]
     search_fields = ["student__fist_name", "student__last_name"]
-    list_filter = ("day")
+    #list_filter = ("day")
 
     @admin.display(ordering='student__user__first_name', description='student')
     def get_student(self, obj):
