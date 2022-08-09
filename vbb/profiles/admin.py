@@ -12,7 +12,7 @@ class MentorProfileAdmin(admin.ModelAdmin):
 
     list_display = ["get_first_name", "approval_status"]
     search_fields = ["user__first_name"]
-    list_filter = ("approval_status", "organization")
+    list_filter = ("approval_status", "organization", "assigned_library")
 
     @admin.display(ordering='user__first_name', description='user first name')
     def get_first_name(self, obj):
