@@ -1034,8 +1034,8 @@ class UserPreferenceSlotViews(APIView):
                                         startRecurFormatted = datetime.strptime(startRecSplit, '%Y-%m-%d')
                                         endRecurFormatted = datetime.strptime(endRecSplit, '%Y-%m-%d')
 
-                                        startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S.%fZ')
-                                        endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S.%fZ')
+                                        startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S%fZ')
+                                        endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S%fZ')
 
                                         print(startFormatted)
                                         print(endFormatted)
