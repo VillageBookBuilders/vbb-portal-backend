@@ -4,7 +4,6 @@ from .models import Library, Computer, LibraryComputerSlots, UserPreferenceSlot,
 # Register your models here.
 admin.site.register(Library)
 admin.site.register(Computer)
-admin.site.register(ComputerReservation)
 admin.site.register(Announcement)
 
 
@@ -38,3 +37,35 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
     @admin.display(ordering='library__name', description='library')
     def get_library(self, obj):
         return obj.computer_slot.library.name
+
+
+@admin.register(ComputerReservation)
+class ComputerReservationAdmin(admin.ModelAdmin):
+
+    list_display = ["get_library", "get_student", "get_mentor", "get_computer", "get_status", "is_recurring"]
+    search_fields = ["student__first_name", "student__last_name", ]
+    #list_filter = ("day")
+
+    @admin.display(ordering='student__name', description='student')
+    def get_student(self, obj):
+        return (obj.student.first_name + " " +obj.student.last_name)
+    
+    @admin.display(ordering='mentor__name', description='mentor')
+    def get_mentor(self, obj):
+        return (obj.mentor.first_name + " " +obj.mentor.last_name)
+
+    @admin.display(ordering='library__name', description='library')
+    def get_library(self, obj):
+        return obj.computer.library.name
+
+    @admin.display(ordering='computer__name', description='computer')
+    def get_computer(self, obj):
+        return obj.computer.name
+
+    @admin.display(ordering='reserve_status__name', description='status')
+    def get_status(self, obj):
+        return obj.reserve_status
+    
+    @admin.display(ordering='recurring__name', description='is recurring')
+    def get_recurring(self, obj):
+        return obj.is_recurring
