@@ -29,4 +29,4 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='student__name', description='student')
     def get_student(self, obj):
-        return (obj.student.first_name + " " +obj.student.first_name)
+        return (obj.student.first_name + " " +obj.student.last_name)
