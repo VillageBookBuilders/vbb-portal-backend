@@ -40,7 +40,6 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
                     "start_recurring", 
                     "end_recurring", 
                     "is_recurring", 
-                    "created_at"
                     ),
             },
         ),
