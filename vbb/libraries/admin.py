@@ -42,7 +42,7 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
 @admin.register(ComputerReservation)
 class ComputerReservationAdmin(admin.ModelAdmin):
 
-    list_display = ["get_library", "get_student", "get_mentor", "get_computer", "get_status", "is_recurring"]
+    list_display = ["get_library", "get_student", "get_mentor", "get_computer", "reserve_status", "is_recurring"]
     search_fields = ["student__first_name", "student__last_name", ]
     #list_filter = ("day")
 
@@ -62,10 +62,3 @@ class ComputerReservationAdmin(admin.ModelAdmin):
     def get_computer(self, obj):
         return obj.computer.name
 
-    @admin.display(ordering='reserve_status__name', description='status')
-    def get_status(self, obj):
-        return obj.reserve_status
-    
-    @admin.display(ordering='recurring__name', description='is recurring')
-    def get_recurring(self, obj):
-        return obj.is_recurring
