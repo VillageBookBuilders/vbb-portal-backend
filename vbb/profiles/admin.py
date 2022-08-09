@@ -29,5 +29,9 @@ class MentorProfileAdmin(auth_admin.MentorProfileAdmin):
     #     ),
     #     (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     # )
-    list_display = ["user.first_name", "user.last_name"]
-    search_fields = ["user.first_name", "user.last_name"]
+    list_display = ["get_first_name",]
+    #search_fields = []
+
+    @admin.display(ordering='user__first_name', description='user first name')
+    def get_first_name(self, obj):
+        return obj.user.first_name
