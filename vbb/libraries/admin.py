@@ -23,8 +23,8 @@ class LibraryComputerSlotsAdmin(admin.ModelAdmin):
 @admin.register(UserPreferenceSlot)
 class UserPreferenceSlotAdmin(admin.ModelAdmin):
 
-    list_display = ["is_recurring"]
-    search_fields = ["student__fist_name", "student__last_name"]
+    list_display = ["get_student", "is_recurring"]
+    search_fields = ["student__user__first_name", "student__user__last_name"]
     #list_filter = ("day")
 
     @admin.display(ordering='student__user__first_name', description='student')
