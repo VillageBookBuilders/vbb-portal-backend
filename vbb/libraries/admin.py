@@ -23,27 +23,27 @@ class LibraryComputerSlotsAdmin(admin.ModelAdmin):
 @admin.register(UserPreferenceSlot)
 class UserPreferenceSlotAdmin(admin.ModelAdmin):
 
-    # fieldsets = (
-    #     (_("Participants"), {"fields": ("student", "mentor", )}),
-    #     (
-    #         _("Computer Slot"),
-    #         {
-    #             "fields": ("computer_slot"),
-    #         },
-    #     ),
-    #     (
-    #         _("Important Times"),
-    #         {
-    #             "fields": (
-    #                 "start_time", 
-    #                 "end_time", 
-    #                 "start_recurring", 
-    #                 "end_recurring", 
-    #                 "is_recurring", 
-    #                 ),
-    #         },
-    #     ),
-    # )
+    fieldsets = (
+        (_("Participants"), {"fields": ("student", "mentor", )}),
+        (
+            _("Computer Slot"),
+            {
+                "fields": ("computer_slot__library"),
+            },
+        ),
+        (
+            _("Important Times"),
+            {
+                "fields": (
+                    "start_time", 
+                    "end_time", 
+                    "start_recurring", 
+                    "end_recurring", 
+                    "is_recurring", 
+                    ),
+            },
+        ),
+    )
 
     list_display = ["get_library", "get_student", "get_mentor", "is_recurring"]
     search_fields = ["student__first_name", "student__last_name"]
