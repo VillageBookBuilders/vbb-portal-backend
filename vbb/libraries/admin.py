@@ -24,9 +24,9 @@ class LibraryComputerSlotsAdmin(admin.ModelAdmin):
 class UserPreferenceSlotAdmin(admin.ModelAdmin):
 
 
-    list_display = ["get_library", "get_student", "get_mentor", "is_recurring"]
-    search_fields = ["student__first_name", "student__last_name"]
-    list_filter = ("mentor", "student")
+    # list_display = ["get_library", "get_student", "get_mentor", "is_recurring"]
+    # search_fields = ["student__first_name", "student__last_name"]
+    # list_filter = ("mentor", "student")
 
     @admin.display(ordering='student__name', description='student')
     def get_student(self, obj):
@@ -45,7 +45,7 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
 class ComputerReservationAdmin(admin.ModelAdmin):
 
     list_display = ["get_library", "get_student", "get_mentor", "get_computer", "reserve_status", "is_recurring"]
-    search_fields = ["student__first_name", "student__last_name", ]
+    search_fields = ["student__first_name", "student__last_name", "mentor__first_name", "mentor__last_name"]
     list_filter = ("mentor", "student", "start_time", "reserved_slot")
     actions = ["assign_teams_link"]
 
