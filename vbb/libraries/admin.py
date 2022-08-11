@@ -68,11 +68,17 @@ class ComputerReservationAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='library__name', description='library')
     def get_library(self, obj):
-        return obj.computer.library.name
+        try:
+            return obj.computer.library.name
+        except:
+            return "----"
 
     @admin.display(ordering='computer__name', description='computer')
     def get_computer(self, obj):
-        return obj.computer.name
+        try:
+            return obj.computer.name
+        except:
+            return "----"
     
     @admin.action(description='Assign MS Teams link')
     def assign_teams_link(modeladmin, request, queryset):
