@@ -11,13 +11,21 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: vbb_production_django
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     platform: linux/x86_64
     depends_on:
       - postgres
       - redis
+    volumes:
+      - .:/app:z
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
+    ports:
+      - "8000:8000"
     command: /start
 
   postgres:
@@ -30,7 +38,10 @@ services:
       - production_postgres_data_backups:/backups:z
     env_file:
       - ./.envs/.production/.postgres
-
+    ports:
+        - "5432:5432"
+    expose:
+        - "5432"
   traefik:
     build:
       context: .
@@ -51,14 +62,17 @@ services:
   celeryworker:
     <<: *django
     image: vbb_production_celeryworker
+    ports: []
     command: /start-celeryworker
 
   celerybeat:
     <<: *django
     image: vbb_production_celerybeat
+    ports: []
     command: /start-celerybeat
 
   flower:
     <<: *django
     image: vbb_production_flower
+    ports: []
     command: /start-flower

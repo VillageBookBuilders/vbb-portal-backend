@@ -916,12 +916,12 @@ class UserPreferenceSlotViews(APIView):
                             #userSlot = None
                             userSlotSerializer = {}
 
-                            directorEmail = 'chris@myrelaytech.com'
+                            directorEmail = 'mentor@villagebookbuilders.org'
                             username = studentObj.first_name + ' ' + studentObj.last_name
 
 
-                            start = availableSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
-                            end = availableSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
+                            start = userSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
+                            end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
                             conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email)
                             print(conferenceLink)
 
@@ -1034,8 +1034,8 @@ class UserPreferenceSlotViews(APIView):
                                         startRecurFormatted = datetime.strptime(startRecSplit, '%Y-%m-%d')
                                         endRecurFormatted = datetime.strptime(endRecSplit, '%Y-%m-%d')
 
-                                        startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S.%fZ')
-                                        endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S.%fZ')
+                                        startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S%fZ')
+                                        endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S%fZ')
 
                                         print(startFormatted)
                                         print(endFormatted)
@@ -1446,7 +1446,7 @@ class BookComputerReservationViews(APIView):
                 except ComputerReservation.DoesNotExist:
                     return Response({"error": "ComputerReservation for this prefence slot could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                directorEmail = 'chris@myrelaytech.com'
+                directorEmail = 'mentor@villagebookbuilders.org'
                 username = studentUser.first_name + ' ' + studentUser.last_name
 
 
