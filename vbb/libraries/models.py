@@ -77,7 +77,7 @@ class LibraryComputerSlots(models.Model):
 
     def __str__(self):
         #return str(self.uniqueID) + str(self.day) + str(self.id)
-        return "%s %s %s" % (self.library.name, self.day, self.start_time)
+        return "%s %s %s" % (self.library.name, DAYS[self.day][1], self.start_time)
 
     class Meta:
         verbose_name = "Library Computer Slots"
