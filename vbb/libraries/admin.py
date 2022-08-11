@@ -13,11 +13,14 @@ class LibraryComputerSlotsAdmin(admin.ModelAdmin):
 
     list_display = ["get_library", "day", "start_time", "end_time", "start_recurring" ,"end_recurring"]
     search_fields = ["library__name"]
-    list_filter = ("library__name", "day")
+    list_filter = ("library", "day")
 
     @admin.display(ordering='library__name', description='library')
     def get_library(self, obj):
-        return obj.library.name
+        try:
+            return obj.library.name
+        except:
+            return "----"
 
 
 @admin.register(UserPreferenceSlot)
