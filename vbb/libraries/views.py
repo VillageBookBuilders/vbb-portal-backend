@@ -920,8 +920,14 @@ class UserPreferenceSlotViews(APIView):
                             username = studentObj.first_name + ' ' + studentObj.last_name
 
 
-                            start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ')
-                            end = datetime.strptime(userSlot.end_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                            if isinstance(userSlot.start_time, str):
+                                start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                                end = datetime.strptime(userSlot.end_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                            else:
+                                start = userSlot.start_time.strptime('%Y-%m-%dT%H:%M:%S%fZ')
+                                end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S%fZ')
+
+
                             conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email)
                             print(conferenceLink)
 
