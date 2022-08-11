@@ -919,13 +919,11 @@ class UserPreferenceSlotViews(APIView):
                             directorEmail = 'mentor@villagebookbuilders.org'
                             username = studentObj.first_name + ' ' + studentObj.last_name
 
+                            startObj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                            endObj = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S%fZ')
 
-                            if isinstance(userSlot.start_time, str):
-                                start = userSlot.start_time.split('Z')[0]
-                                end = userSlot.end_time.split.split('Z')[0]
-                            else:
-                                start = userSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
-                                end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
+                            start = datetime.strftime(startObj, '%Y-%m-%dT%H:%M:%S')
+                            end = datetime.strftime(endObj, '%Y-%m-%dT%H:%M:%S')
                             print(start)
                             print(end)
 
