@@ -28,26 +28,20 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
     search_fields = ["student__first_name", "student__last_name"]
     list_filter = ("mentor", "student")
 
-    @admin.display(ordering='student__name', description='student')
+    @admin.display(ordering='student__name', description='student', empty_value="----")
     def get_student(self, obj):
-        try:
-            return (obj.student.first_name + " " +obj.student.last_name)
-        except:
-            return "----"
+        return (obj.student.first_name + " " +obj.student.last_name)
     
-    @admin.display(ordering='mentor__name', description='mentor')
+    
+    @admin.display(ordering='mentor__name', description='mentor', empty_value="----")
     def get_mentor(self, obj):
-        try:
-            return (obj.mentor.first_name + " " +obj.mentor.last_name)
-        except:
-            return "----"
+        return (obj.mentor.first_name + " " +obj.mentor.last_name)
 
-    @admin.display(ordering='library__name', description='library')
+
+    @admin.display(ordering='library__name', description='library', empty_value="----")
     def get_library(self, obj):
-        try:
-            return obj.computer_slot.library.name
-        except:
-            return "----"
+        return obj.computer_slot.library.name
+
 
 
 @admin.register(ComputerReservation)
