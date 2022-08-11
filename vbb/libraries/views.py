@@ -921,11 +921,11 @@ class UserPreferenceSlotViews(APIView):
 
 
                             if isinstance(userSlot.start_time, str):
-                                start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ').strftime('%Y-%m-%dT%H:%M:%S%fZ')
-                                end = datetime.strptime(userSlot.end_time, '%Y-%m-%dT%H:%M:%S%fZ').strftime('%Y-%m-%dT%H:%M:%S%fZ')
+                                start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
+                                end = datetime.strptime(userSlot.end_time, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
                             else:
-                                start = userSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S%fZ')
-                                end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S%fZ')
+                                start = userSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
+                                end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
                             print(start)
                             print(end)
 
