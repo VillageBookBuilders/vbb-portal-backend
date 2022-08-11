@@ -61,7 +61,7 @@ http:
     django:
       loadBalancer:
         servers:
-          - url: http://django:5000
+          - url: http://django:8000
 
     flower:
       loadBalancer:
