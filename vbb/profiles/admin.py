@@ -3,6 +3,8 @@ from .models import AdvisorProfile, MentorProfile, LibrarianProfile, StudentProf
 
 # Register your models here.
 admin.site.register(Opportunity)
+admin.site.register(AdvisorProfile)
+admin.site.register(LibrarianProfile)
 
 @admin.register(MentorProfile)
 class MentorProfileAdmin(admin.ModelAdmin):
@@ -41,33 +43,33 @@ class StudentProfileAdmin(admin.ModelAdmin):
         except:
             return "----"
 
-@admin.register(AdvisorProfile)
-class AdvisorProfileAdmin(admin.ModelAdmin):
+# @admin.register(AdvisorProfile)
+# class AdvisorProfileAdmin(admin.ModelAdmin):
 
-    list_display = ["library", "get_name"]
-    search_fields = ["user__first_name", "user__last_name", "user__username"]
-    list_filter = ("library")
+#     list_display = ["library", "get_name"]
+#     search_fields = ["user__first_name", "user__last_name", "user__username"]
+#     list_filter = ("library")
 
-    @admin.display(ordering='user__name', description='name')
-    def get_name(self, obj):
-        try: 
-            return (obj.user.first_name + " " +obj.user.last_name)
-        except:
-            return "----"
-
-
-
-@admin.register(LibrarianProfile)
-class LibrarianProfileAdmin(admin.ModelAdmin):
-
-    list_display = ["library", "get_name"]
-    search_fields = ["user__first_name", "user__last_name", "user__username"]
-    list_filter = ("library")
+#     @admin.display(ordering='user__name', description='name')
+#     def get_name(self, obj):
+#         try: 
+#             return (obj.user.first_name + " " +obj.user.last_name)
+#         except:
+#             return "----"
 
 
-    @admin.display(ordering='user__name', description='name')
-    def get_name(self, obj):
-        try: 
-            return (obj.user.first_name + " " +obj.user.last_name)
-        except:
-            return "----"
+
+# @admin.register(LibrarianProfile)
+# class LibrarianProfileAdmin(admin.ModelAdmin):
+
+#     list_display = ["library", "get_name"]
+#     search_fields = ["user__first_name", "user__last_name", "user__username"]
+#     list_filter = ("library")
+
+
+#     @admin.display(ordering='user__name', description='name')
+#     def get_name(self, obj):
+#         try: 
+#             return (obj.user.first_name + " " +obj.user.last_name)
+#         except:
+#             return "----"
