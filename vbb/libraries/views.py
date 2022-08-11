@@ -924,7 +924,7 @@ class UserPreferenceSlotViews(APIView):
                                 start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ')
                                 end = datetime.strptime(userSlot.end_time, '%Y-%m-%dT%H:%M:%S%fZ')
                             else:
-                                start = userSlot.start_time.strptime('%Y-%m-%dT%H:%M:%S%fZ')
+                                start = userSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S%fZ')
                                 end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S%fZ')
 
 
