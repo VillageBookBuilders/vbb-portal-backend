@@ -33,21 +33,21 @@ class UserPreferenceSlotAdmin(admin.ModelAdmin):
         try:
             return (obj.student.first_name + " " +obj.student.last_name)
         except:
-            return ""
+            return "----"
     
     @admin.display(ordering='mentor__name', description='mentor')
     def get_mentor(self, obj):
         try:
             return (obj.mentor.first_name + " " +obj.mentor.last_name)
         except:
-            return ""
+            return "----"
 
     @admin.display(ordering='library__name', description='library')
     def get_library(self, obj):
         try:
             return obj.computer_slot.library.name
         except:
-            return ""
+            return "----"
 
 
 @admin.register(ComputerReservation)
