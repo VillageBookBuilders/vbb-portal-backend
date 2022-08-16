@@ -26,6 +26,7 @@ class UserModelSerializer(serializers.ModelSerializer):
             "is_librarian",
             "is_mentor",
             "date_of_birth",
+            "date_joined",
         ]
         extra_kwargs = {
             "url": {"view_name": "api:user-detail", "lookup_field": "username"}
@@ -48,6 +49,7 @@ class UserModelSerializer(serializers.ModelSerializer):
             "is_librarian",
             "is_mentor",
             "date_of_birth",
+            "date_joined",
         ]
         extra_kwargs = {
             "url": {"view_name": "api:user-detail", "lookup_field": "username"}
