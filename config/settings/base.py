@@ -336,6 +336,8 @@ JWT_AUTH = {
 
 SIMPLE_JWT = {
    'AUTH_HEADER_TYPES': ('Bearer',),
+   'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=3),
+   'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
 }
 #ALL AUTH
 # ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
