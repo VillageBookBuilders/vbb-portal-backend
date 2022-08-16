@@ -176,7 +176,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
-        "DIRS": [str(APPS_DIR / "templates")],
+        "DIRS": [str(APPS_DIR / "templates"), str(APPS_DIR / "vbb/profiles")],
         # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
         "APP_DIRS": True,
         "OPTIONS": {
@@ -329,13 +329,15 @@ REST_USE_JWT = True
 JWT_AUTH = {
     'JWT_ALGORITHM': 'HS256',
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=36),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=72),
     'JWT_ALLOW_REFRESH': True,
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=14),
 }
 
 SIMPLE_JWT = {
    'AUTH_HEADER_TYPES': ('Bearer',),
+   'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=3),
+   'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
 }
 #ALL AUTH
 # ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
