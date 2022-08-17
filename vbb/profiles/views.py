@@ -384,6 +384,7 @@ class ApproveMentorViewSet(APIView):
         mentorProfile = None
 
         mentor_id = request.data.get("mentor_id", None)
+        library_id = request.data.get("library_id", None)
         stat = request.data.get("status", None)
 
 
@@ -394,12 +395,20 @@ class ApproveMentorViewSet(APIView):
 
 
         try:
+            library = Library.objects.get(uniqueID=library_id)
+        except Library.DoesNotExist:
+            return Response({"error": "Library with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
             mentorProfile = MentorProfile.objects.get(user=mentor)
         except MentorProfile.DoesNotExist:
             return Response({"error": "StudentProfile with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
         if stat == "approved":
             mentorProfile.approval_status = 'Approved'
+            mentorProfile.assigned_library = library
+
         elif stat == "not-reviewed":
             mentorProfile.approval_status = 'Not Reviewed'
         elif stat == "rejected":
