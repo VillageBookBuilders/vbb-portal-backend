@@ -205,7 +205,7 @@ class RetrieveLibraryMentorsViews(APIView):
             return Response({"error": "Library with that provided ID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            mentors = MentorProfile.objects.filter(assigned_library=library.pk)
+            mentors = MentorProfile.objects.all()
         except MentorProfile.DoesNotExist:
             return Response({"error": "No mentor with that library could be found."}, status=status.HTTP_400_BAD_REQUEST)
 
