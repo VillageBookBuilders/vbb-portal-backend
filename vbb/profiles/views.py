@@ -160,7 +160,35 @@ class MentorSignUp(APIView):
             #     print(e)
 
 
-            body = f"Welcome to Village Book Builders! Please confirm your email by copy and pasting this link in your browser: {link}"
+            body = f"""
+                    Hello {user.first_name},\n
+
+                        Thank you for your interest in becoming a mentor and bringing hope to kids through education!! 
+                        Our mentors meet with students around the world for 1 hour each week. They read storybooks, 
+                        learn together online, and develop a relationship with their student over the course of many months. 
+                        Note: Mentors must have a computer they can use for mentor sessions 1 hour each week, and have a strong, 
+                        stable internet connection.\n
+
+                        It takes just a few simple steps to become a mentor:\n
+
+                        1. Click the following link to verify your email address: {link}\n
+
+                        2. Record a shot 1-2 minute video introducing yourself to your potential child and 
+                        explaining why you want to be their mentor. Upload this video to youtube or any other 
+                        video hosting platform and save the video link for the next step!\n
+
+                        2. Log-in and complete your short onboarding questionnaire, then submit for our team to review\n
+
+                        3. Book your mentor orientation session via calendly: https://calendly.com/admin-5496/mentor-orientation-and-scheduling\n
+
+                        4. Join Facebook Workplace: https://work.me/g/qt70QTGMs/R3dUS5iu\n
+
+                        5. Attend your oreintation so that we can help you book your first session!\n
+
+                        If you have any questions please let us know, we are here to help you make a difference.\n
+
+                        Thank you,\n
+                        Everyone at Village Book Builders"""
             send_mail(
                 "Village Book Builders - Please confirm your email",
                 body,
