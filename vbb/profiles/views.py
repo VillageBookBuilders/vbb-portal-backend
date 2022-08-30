@@ -131,7 +131,7 @@ class MentorSignUp(APIView):
               from_email='mentor@villagebookbuilders.org',
               to=[user.email],
             )
-            
+
             msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
             msg.dynamic_template_data = {
               "first_name": user.first_name,
@@ -547,6 +547,19 @@ class StudentProfileViewSet(APIView):
         # create user
         time_zones = dict(TIMEZONES)
         user_time_zone = time_zones.get(time_zone)
+
+        if year_of_birth:
+            user.date_of_birth = year_of_birth
+
+
+        if user_time_zone:
+            user.time_zone = user_time_zone
+
+        if gender:
+            user.gender = gender
+
+        user.save()
+        user.refresh_from_db()
 
         try:
             (student_profile, _) = StudentProfile.objects.update_or_create(
