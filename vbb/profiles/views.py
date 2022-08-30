@@ -127,46 +127,31 @@ class MentorSignUp(APIView):
             # amazon simple email service
             # send_mail("subject", "message", "from_email", ["to_list"])
 
-            # msg = EmailMessage(
-            #   from_email='mentor@villagebookbuilders.org',
-            #   to=[user.email],
-            # )
-            # msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
-            # msg.dynamic_template_data = {
-            #   "first_name": user.first_name,
-            #   "verification_link": link
-            # }
-            # msg.subject = "Hll"
-            # msg.custom_args = {
-            #   "to": [
-            #     {
-            #       "email": user.email
-            #     }
-            #   ],
-            #   "subject": "YOUR SUBJECT LINE GOES HERE",
-            #   "dynamic_template_data":{
-            #       "first_name": user.first_name,
-            #       "verification_link":link
-            #   },
-            #   "template_id": "d-e5a5f3e91ebe4621a24355673ae255f2"
-            # }
-            #
-            # print(msg.custom_args)
-            # # print(msg.dynamic_template_data)
-            #
-            # try:
-            #     msg.send(fail_silently=False)
-            # except Exception as e:
-            #     print(e)
-
-
-            body = f"Welcome to Village Book Builders! Please confirm your email by copy and pasting this link in your browser: {link}"
-            send_mail(
-                "Village Book Builders - Please confirm your email",
-                body,
-                "mentor@villagebookbuilders.org",
-                [user.email],
+            msg = EmailMessage(
+              from_email='mentor@villagebookbuilders.org',
+              to=[user.email],
             )
+            msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
+            msg.dynamic_template_data = {
+              "first_name": user.first_name,
+              "verification_link": link
+            }
+            msg.subject = "Welcome to Village Book Builders! Please verify your account to finish setup."
+            print(msg.dynamic_template_data)
+
+            try:
+                msg.send(fail_silently=False)
+            except Exception as e:
+                print(e)
+
+
+            # body = f"Welcome to Village Book Builders! Please confirm your email by copy and pasting this link in your browser: {link}"
+            # send_mail(
+            #     "Village Book Builders - Please confirm your email",
+            #     body,
+            #     "mentor@villagebookbuilders.org",
+            #     [user.email],
+            # )
             return Response(status=status.HTTP_201_CREATED, data={"message": "Email verification link sent successfully"})
 
         except IntegrityError:
