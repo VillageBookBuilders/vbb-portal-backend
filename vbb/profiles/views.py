@@ -127,63 +127,32 @@ class MentorSignUp(APIView):
             # amazon simple email service
             # send_mail("subject", "message", "from_email", ["to_list"])
 
-            # msg = EmailMessage(
-            #   from_email='mentor@villagebookbuilders.org',
-            #   to=[user.email],
-            # )
-            # msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
-            # msg.dynamic_template_data = {
-            #   "first_name": user.first_name,
-            #   "verification_link": link
-            # }
-            # msg.subject = "Hll"
-            # msg.custom_args = {
-            #   "to": [
-            #     {
-            #       "email": user.email
-            #     }
-            #   ],
-            #   "subject": "YOUR SUBJECT LINE GOES HERE",
-            #   "dynamic_template_data":{
-            #       "first_name": user.first_name,
-            #       "verification_link":link
-            #   },
-            #   "template_id": "d-e5a5f3e91ebe4621a24355673ae255f2"
-            # }
-            #
-            # print(msg.custom_args)
-            # # print(msg.dynamic_template_data)
-            #
-            # try:
-            #     msg.send(fail_silently=False)
-            # except Exception as e:
-            #     print(e)
-
-
-            body = f"""
-                    Hello {user.first_name},
-
-                        Thank you for your interest in becoming a mentor and bringing hope to kids through education!! Our mentors meet with students around the world for 1 hour each week. They read storybooks, learn together online, and develop a relationship with their student over the course of many months. Note: Mentors must have a computer they can use for mentor sessions 1 hour each week, and have a strong, stable internet connection.
-
-                        It takes just a few simple steps to become a mentor:
-
-                        1. Click the following link to verify your email address: {link}
-                        2. Record a shot 1-2 minute video introducing yourself to your potential child and  explaining why you want to be their mentor. Upload this video to youtube or any other video hosting platform and save the video link for the next step!
-                        3. Log-in and complete your short onboarding questionnaire, then submit for our team to review
-                        4. Book your mentor orientation session via calendly: https://calendly.com/admin-5496/mentor-orientation-and-scheduling
-                        5. Join Facebook Workplace: https://work.me/g/qt70QTGMs/R3dUS5iu
-                        6. Attend your oreintation so that we can help you book your first session!
-
-                        If you have any questions please let us know, we are here to help you make a difference.
-
-                        Thank you,
-                        Everyone at Village Book Builders"""
-            send_mail(
-                "Village Book Builders - Please confirm your email",
-                body,
-                "mentor@villagebookbuilders.org",
-                [user.email],
+            msg = EmailMessage(
+              from_email='mentor@villagebookbuilders.org',
+              to=[user.email],
             )
+
+            msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
+            msg.dynamic_template_data = {
+              "first_name": user.first_name,
+              "verification_link": link
+            }
+            msg.subject = "Welcome to Village Book Builders! Please verify your account to finish setup."
+            print(msg.dynamic_template_data)
+
+            try:
+                msg.send(fail_silently=False)
+            except Exception as e:
+                print(e)
+
+
+            # body = f"Welcome to Village Book Builders! Please confirm your email by copy and pasting this link in your browser: {link}"
+            # send_mail(
+            #     "Village Book Builders - Please confirm your email",
+            #     body,
+            #     "mentor@villagebookbuilders.org",
+            #     [user.email],
+            # )
             return Response(status=status.HTTP_201_CREATED, data={"message": "Email verification link sent successfully"})
 
         except IntegrityError:
@@ -578,6 +547,19 @@ class StudentProfileViewSet(APIView):
         # create user
         time_zones = dict(TIMEZONES)
         user_time_zone = time_zones.get(time_zone)
+
+        if year_of_birth:
+            user.date_of_birth = year_of_birth
+
+
+        if user_time_zone:
+            user.time_zone = user_time_zone
+
+        if gender:
+            user.gender = gender
+
+        user.save()
+        user.refresh_from_db()
 
         try:
             (student_profile, _) = StudentProfile.objects.update_or_create(

@@ -52,6 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
             "librarian_profile",
             "advisor_profile",
             "date_of_birth",
+            "gender"
         ]
 
         extra_kwargs = {
