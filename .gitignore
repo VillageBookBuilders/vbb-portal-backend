@@ -278,3 +278,5 @@ vbb/media/
 .envs/*
 !.envs/.local/
 ./dev_notes.md
+
+.idea/*
