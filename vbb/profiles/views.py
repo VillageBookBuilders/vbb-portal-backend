@@ -226,7 +226,6 @@ class MentorProfileViewSet(APIView):
         """
         user = request.user
         data = request.data
-        print(data)
         career_ids = data.get("careers", [])
         mentoring_language_ids = data.get("mentoring_languages", [])
         opportunities = data.get("opportunities", [])
@@ -239,7 +238,8 @@ class MentorProfileViewSet(APIView):
         is_of_age = data.get("is_of_age", False)
         time_zone = data.get("timezone", "")
         date_of_birth = data.get("date_of_birth")
-        crimesOrMisdemeanorResponses = data.get("crimesOrMisdemeanorResponses")
+        crimesOrMisdemeanor = data.get("crimes_or_misdemeanor", False)
+        crimesOrMisdemeanorResponses = data.get("crimes_or_misdemeanor_responses", "")
 
 
         # Look up Organization by corp code
@@ -249,6 +249,9 @@ class MentorProfileViewSet(APIView):
         # except Organization.DoesNotExist:
         #     assigned_library = None
         #     org = None
+
+        print(data)
+
 
         time_zones = dict(TIMEZONES)
         user_time_zone = time_zones.get(time_zone)
@@ -276,6 +279,8 @@ class MentorProfileViewSet(APIView):
                 # has_viewed_donation_page : models.BooleanField(default=False)
                 # has_completed_training : models.BooleanField(default=False)
                 # has_clicked_facebook_workplace_invite : models.BooleanField(default=False)
+                "crimesOrMisdemeanor":crimesOrMisdemeanor,
+                "crimesOrMisdemeanorResponses":crimesOrMisdemeanorResponses,
                 "interests": interests,
                 "phone_number": phone_number,
                 "secondary_email": secondary_email,
