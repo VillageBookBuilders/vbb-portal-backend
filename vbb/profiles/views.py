@@ -525,6 +525,7 @@ class StudentProfileViewSet(APIView):
         """
         user = request.user
         data = request.data
+        print(data)
         careers_of_interest = data.get("careers", [])
         mentoring_language_ids = data.get("mentoring_language_ids", [])
         favorite_genres_ids = data.get("favorite_genres_ids", [])
