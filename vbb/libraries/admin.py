@@ -59,7 +59,7 @@ class ComputerReservationAdmin(admin.ModelAdmin):
     list_display = ["get_library", "get_student", "get_mentor", "get_computer", "reserve_status", "is_recurring"]
     search_fields = ["student__first_name", "student__last_name", "mentor__first_name", "mentor__last_name"]
     list_filter = ("mentor", "student", "start_time", "reserved_slot")
-    actions = ["assign_teams_link"]
+    actions = ["assign_teams_link_1", "assign_teams_link_2", "assign_teams_link_3", "assign_teams_link_4", "assign_teams_link_5", "assign_teams_link_6", "assign_teams_link_7", "assign_teams_link_8", "assign_teams_link_9"]
 
     @admin.display(ordering='student__name', description='student')
     def get_student(self, obj):
