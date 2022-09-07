@@ -125,4 +125,3 @@ class ComputerReservationAdmin(admin.ModelAdmin):
     def assign_teams_link(modeladmin, request, queryset):
         queryset.update(conferenceURL= "https://teams.microsoft.com/l/meetup-join/19%3ameeting_NTE2MmM1ZDgtODcwZi00NzNlLWE0OGEtOWU0OTk2NDFhZWJl%40thread.v2/0?context=%7b%22Tid%22%3a%22fd18d236-3ef5-4b90-b883-bfb2882f123b%22%2c%22Oid%22%3a%226cdefbef-fe59-4aa6-ae28-1f351a00206f%22%7d", meetingID="233 754 094 000")
      
-    
