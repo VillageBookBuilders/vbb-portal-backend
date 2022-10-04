@@ -123,7 +123,7 @@ class google_apis:
       r = s.post(url, headers=headers, data=data)
     return (primaryEmail, pwd)
 
-  def calendar_event(self, mentorFirstName, mentorEmail, directorEmail, start_time, end_date, calendar_id, room, duration):
+  def calendar_event(self, mentorFirstName, mentorEmail, directorEmail, start_time, end_date, calendar_id, room, duration, isRecurring):
     calendar_service = build('calendar', 'v3', credentials=self.__mentor_cred)
     timezone = 'UTC'
     start_date_time_obj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S')
@@ -132,38 +132,73 @@ class google_apis:
     end_date_formated = end_date_formated.replace('-', '')
     end_date_formated += 'Z'
 
-    event = {
-      'summary': mentorFirstName + ' - VBB Mentoring Session',
-      'start': {
-        'dateTime': start_date_time_obj.strftime("%Y-%m-%dT%H:%M:%S"),
-        'timeZone': timezone,
-      },
-      'end': {
-        'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-        'timeZone': timezone,
-      },
-      'recurrence': [
-        'RRULE:FREQ=WEEKLY'
-      ],
-      'attendees': [
-        {'email': mentorEmail},
-        {'email': directorEmail},
-        {'email': room, 'resource': "true"}
-      ],
-      'reminders': {
-        'useDefault': False,
-        'overrides': [
-        {'method': 'email', 'minutes': 24 * 60},  # reminder 24 hrs before event
-        # pop up reminder, 10 min before event
-        {'method': 'popup', 'minutes': 10},
-        ],
-      },
-      'conferenceData': {
-        'createRequest': {
-          'requestId': ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+    event = {}
+
+    recurrenceString = 'RRULE:FREQ=WEEKLY'
+    if isRecurring == True:
+        event = {
+          'summary': mentorFirstName + ' - VBB Mentoring Session',
+          'start': {
+            'dateTime': start_date_time_obj.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'end': {
+            'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'recurrence': [
+            'RRULE:FREQ=WEEKLY'
+          ],
+          'attendees': [
+            {'email': mentorEmail},
+            {'email': directorEmail},
+            {'email': room, 'resource': "true"}
+          ],
+          'reminders': {
+            'useDefault': False,
+            'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},  # reminder 24 hrs before event
+            # pop up reminder, 10 min before event
+            {'method': 'popup', 'minutes': 10},
+            ],
+          },
+          'conferenceData': {
+            'createRequest': {
+              'requestId': ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            }
+          },
         }
-      },
-    }
+
+    else:
+        event = {
+          'summary': mentorFirstName + ' - VBB Mentoring Session',
+          'start': {
+            'dateTime': start_date_time_obj.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'end': {
+            'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'attendees': [
+            {'email': mentorEmail},
+            {'email': directorEmail},
+            {'email': room, 'resource': "true"}
+          ],
+          'reminders': {
+            'useDefault': False,
+            'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},  # reminder 24 hrs before event
+            # pop up reminder, 10 min before event
+            {'method': 'popup', 'minutes': 10},
+            ],
+          },
+          'conferenceData': {
+            'createRequest': {
+              'requestId': ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            }
+          },
+        }
 
 
     event_obj = calendar_service.events().insert(calendarId=calendar_id, body=event,
@@ -351,7 +386,7 @@ class google_apis:
 
 
 
-def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location):
+def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location, isRecurring):
     g = google_apis()
     eventObj = g.calendar_event(
             studentName,
@@ -360,7 +395,7 @@ def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, da
             dateStart, dateEnd,
             "c_nqd1aak2qnc6j4ejejo787qk1o@group.calendar.google.com",
             location,
-            "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
+            "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com", isRecurring)
     return eventObj
 
   # FOR TESTING PURPOSES -- REMOVE LATER
