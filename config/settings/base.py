@@ -464,4 +464,4 @@ CORS_ALLOWED_ORIGINS = [
     "https://jellyfish-app-7iuqd.ondigitalocean.app"
 ]
 CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
