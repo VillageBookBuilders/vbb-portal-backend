@@ -1471,12 +1471,17 @@ class BookComputerReservationViews(APIView):
 
                 directorEmail = 'mentor@villagebookbuilders.org'
                 username = studentUser.first_name + ' ' + studentUser.last_name
-
+                conferenceLink = {}
 
                 start = userPreferenceSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
                 end = userPreferenceSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
-                conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False)
-                print(conferenceLink)
+
+                if userPreferenceSlot.start_recurring != None and userPreferenceSlot.end_recurring != None:
+                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True)
+                    print(conferenceLink)
+                else:
+                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False)
+                    print(conferenceLink)
 
                 link = conferenceLink["link"]
                 id = conferenceLink["id"]
