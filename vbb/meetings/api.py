@@ -123,7 +123,7 @@ class google_apis:
       r = s.post(url, headers=headers, data=data)
     return (primaryEmail, pwd)
 
-  def calendar_event(self, mentorFirstName, mentorEmail, directorEmail, start_time, end_date, calendar_id, room, duration, isRecurring):
+  def calendar_event(self, mentorFirstName, mentorEmail, directorEmail, start_time, end_date, calendar_id, room, duration, isRecurring, recurringEndDate=None):
     calendar_service = build('calendar', 'v3', credentials=self.__mentor_cred)
     timezone = 'UTC'
     start_date_time_obj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S')
@@ -132,9 +132,18 @@ class google_apis:
     end_date_formated = end_date_formated.replace('-', '')
     end_date_formated += 'Z'
 
+    if recurringEndDate:
+        endrecurr_obj = datetime.strptime(recurringEndDate, '%Y-%m-%dT%H:%M:%S')
+        endrecurr_obj_formated = recurringEndDate.replace(':', '')
+        endrecurr_obj_formated = endrecurr_obj_formated.replace('-', '')
+        endrecurr_obj_formated += 'Z'
+        print(endrecurr_obj_formated)
+
+
     event = {}
 
-    recurrenceString = 'RRULE:FREQ=WEEKLY'
+    recurrenceString = 'RRULE:FREQ=WEEKLY;UNTIL='+ endrecurr_obj_formated
+    print(recurrenceString)
     if isRecurring == True:
         event = {
           'summary': mentorFirstName + ' - VBB Mentoring Session',
@@ -147,7 +156,7 @@ class google_apis:
             'timeZone': timezone,
           },
           'recurrence': [
-            'RRULE:FREQ=WEEKLY'
+            recurrenceString
           ],
           'attendees': [
             {'email': mentorEmail},
@@ -386,7 +395,7 @@ class google_apis:
 
 
 
-def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location, isRecurring):
+def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location, isRecurring, recurringEndDate=None):
     g = google_apis()
     eventObj = g.calendar_event(
             studentName,
@@ -395,7 +404,7 @@ def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, da
             dateStart, dateEnd,
             "c_nqd1aak2qnc6j4ejejo787qk1o@group.calendar.google.com",
             location,
-            "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com", isRecurring)
+            "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com", isRecurring, recurringEndDate)
     return eventObj
 
   # FOR TESTING PURPOSES -- REMOVE LATER

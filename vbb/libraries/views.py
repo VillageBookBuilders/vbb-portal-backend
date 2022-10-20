@@ -928,7 +928,7 @@ class UserPreferenceSlotViews(APIView):
                                 #Create Multiple  Computer Reservations if Reccurring
                                 if start_recurring != None and end_recurring != None:
 
-                                    conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True)
+                                    conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, end_recurring)
                                     print(conferenceLink)
 
                                     link = conferenceLink["link"]
@@ -1029,7 +1029,7 @@ class UserPreferenceSlotViews(APIView):
                                     selectedComputer = Computer.objects.get(pk=freeComputers[0])
                                     if start_recurring != None and end_recurring != None:
 
-                                        conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True)
+                                        conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, end_recurring)
                                         print(conferenceLink)
 
                                         link = conferenceLink["link"]
@@ -1476,8 +1476,12 @@ class BookComputerReservationViews(APIView):
                 start = userPreferenceSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
                 end = userPreferenceSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
 
+                endRecurrFormatted = userPreferenceSlot.end_recurring.strftime('%Y-%m-%dT%H:%M:%S')
+
+                #print(endRecurrFormatted)
+
                 if userPreferenceSlot.start_recurring != None and userPreferenceSlot.end_recurring != None:
-                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True)
+                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True, endRecurrFormatted)
                     print(conferenceLink)
                 else:
                     conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False)
