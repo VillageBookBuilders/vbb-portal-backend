@@ -21,6 +21,8 @@ import environ
 import json
 import base64
 from pathlib import Path
+import configparser
+#from graph import Graph
 
 # from dateutil.relativedelta import relativedelta
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -142,9 +144,11 @@ class google_apis:
 
     event = {}
 
-    recurrenceString = 'RRULE:FREQ=WEEKLY;UNTIL='+ endrecurr_obj_formated
-    print(recurrenceString)
+
     if isRecurring == True:
+        recurrenceString = 'RRULE:FREQ=WEEKLY;UNTIL='+ endrecurr_obj_formated
+        print(recurrenceString)
+
         event = {
           'summary': mentorFirstName + ' - VBB Mentoring Session',
           'start': {
@@ -209,9 +213,13 @@ class google_apis:
           },
         }
 
+    print(event)
 
     event_obj = calendar_service.events().insert(calendarId=calendar_id, body=event,
                                         sendUpdates="all", conferenceDataVersion=1).execute()
+
+    print(event_obj)
+
     print ("hangoutlink", event_obj['hangoutLink'])
 
     payload = {"id":event_obj['id'], "link": event_obj['hangoutLink']}
@@ -392,8 +400,49 @@ class google_apis:
     #return updated_event['recurrence'] = []
 
 
-
-
+# class ms_apis:
+#   def __init__(self):
+#     env = environ.Env()
+#     # the proper scopes are needed to access specific Google APIs
+#     # see https://developers.google.com/identity/protocols/oauth2/scopes
+#     config = configparser.ConfigParser()
+#     config.read(['ms_config.cfg', 'config.dev.cfg'])
+#     azure_settings = config['azure']
+#
+#     graph: Graph = Graph(azure_settings)
+#     dirname = os.path.dirname(__file__)
+#     env.read_env(str(ROOT_DIR / ".env"))
+#
+#     #serviceKey = env("GOOGLE_SERVICE_KEY", default="")
+#
+#     def generateMSCalendarEvent(graph: Graph, mentorName, mentorEmail, directorEmail, start_time, end_time, calendar_id, duration, isRecurring, recurringEndDate=None):
+#         # Note: if using app_client, be sure to call
+#         # ensure_graph_for_app_only_auth before using it
+#         self.ensure_graph_for_app_only_auth()
+#         createdEvent = graph.createEvent(mentorName, mentorEmail, directorEmail, start_time, end_time, calendar_id, duration, isRecurring, recurringEndDate=None)
+#         # TODO
+#         return createdEvent
+#
+#     def display_access_token(graph: Graph):
+#         token = graph.get_user_token()
+#         print('User token:', token, '\n')
+#
+#     def list_calendar_events(graph: Graph):
+#         # TODO
+#         return
+#
+#     def list_users(graph: Graph):
+#         users_page = graph.get_users()
+#
+#         # Output each users's details
+#         for user in users_page['value']:
+#             print('User:', user['displayName'])
+#             print('  ID:', user['id'])
+#             print('  Email:', user['mail'])
+#
+#         # If @odata.nextLink is present
+#         more_available = '@odata.nextLink' in users_page
+#         print('\nMore users available?', more_available, '\n')
 
 def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location, isRecurring, recurringEndDate=None):
     g = google_apis()
@@ -408,8 +457,28 @@ def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, da
     return eventObj
 
   # FOR TESTING PURPOSES -- REMOVE LATER
-def testFunction():
-  g = google_apis()
+#def testFunction():
+  # m = ms_apis()
+  # m.generateMSCalendarEvent(
+  #       "Mentor One",
+  #       "chris@myrelaytech.com",
+  #       "chris@myrelaytech.com",
+  #       "2020-12-23T13:30:00",
+  #       "2020-12-23T14:00:00",
+  #       False,
+  #       "2020-12-23T14:00:00")
+
+  # g.calendar_event(
+  #       "Mentor One",
+  #       "chris@myrelaytech.com",
+  #       "chris@myrelaytech.com",
+  #       "2020-12-23T13:30:00",
+  #       "2020-12-23T14:00:00",
+  #       "-",
+  #      "ximena.rodriguez1@villagementors.org",
+  #     "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
+
+  #g = google_apis()
   #g.shift_event("c_oha2uv7abp2vs6jlrl96aeoje8@group.calendar.google.com","0vjr0aj0e3nv1tmc2ui2mtshbi")
 
 
@@ -443,14 +512,15 @@ def testFunction():
 #     cc=["edringger@gmail.com"]
 #   )
 #
-  g.calendar_event(
-        "TestXime",
-        "ximena.rodriguez1@villagementors.org",
-        "chris@myrelaytech.com",
-        "2020-12-23T23:30:00", "2020-12-30T22:00:00",
-        "c_oha2uv7abp2vs6jlrl96aeoje8@group.calendar.google.com",
-       "ximena.rodriguez1@villagementors.org",
-      "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
+# g.calendar_event(
+#       "Mentor One",
+#       "chris@myrelaytech.com",
+#       "chris@myrelaytech.com",
+#       "2020-12-23T13:30:00",
+#       "2020-12-23T14:00:00",
+#       "-",
+#      "ximena.rodriguez1@villagementors.org",
+#     "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
 
 #  g.update_event(
 #

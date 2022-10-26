@@ -825,7 +825,7 @@ class UserPreferenceSlotViews(APIView):
                     return Response({"error": "UserPreferenceSlot with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
-                    print(userSlot.computer_slot)
+                    #print(userSlot.computer_slot)
                     availableSlot = LibraryComputerSlots.objects.get(pk=userSlot.computer_slot.pk)
                 except LibraryComputerSlots.DoesNotExist:
                     return Response({"error": "LibraryComputerSlot with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
@@ -882,17 +882,20 @@ class UserPreferenceSlotViews(APIView):
                         student = User.objects.get(pk=student)
                         userSlot.student = student
 
+                    try:
+                        studentObj = student
+                    except User.DoesNotExist:
+                        return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                    print(mentor)
                     if mentor:
                         mentor = User.objects.get(pk=mentor)
                         userSlot.mentor = mentor
+                        print(mentor)
+                        print(reservations)
 
                         if len(reservations) == 0:
                             print('No reservations or mentor')
-
-                            try:
-                                studentObj = student
-                            except User.DoesNotExist:
-                                return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
                             try:
@@ -1125,8 +1128,30 @@ class UserPreferenceSlotViews(APIView):
                     userSlot.save()
 
                     if mentor:
+
+                        conferenceURL = ''
+                        conferenceId = ''
+
+                        directorEmail = 'mentor@villagebookbuilders.org'
+                        username = studentObj.first_name + ' ' + studentObj.last_name
+
+                        start = start_time.strip('Z')
+                        end = end_time.strip('Z')
+                        endRecurring = end_recurring.strip('Z')
+                        
+                        if start_recurring != None and end_recurring != None:
+                            conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, endRecurring)
+                            conferenceURL = conferenceLink["link"]
+                            conferenceId = conferenceLink["id"]
+                        else:
+                            conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False)
+                            conferenceURL = conferenceLink["link"]
+                            conferenceId = conferenceLink["id"]
+
                         for resev in reservations:
                             resev.mentor = mentor
+                            resev.conferenceURL = conferenceURL
+                            resev.meetingID = conferenceId
                             resev.save()
                             print(resev)
 
@@ -1476,11 +1501,12 @@ class BookComputerReservationViews(APIView):
                 start = userPreferenceSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
                 end = userPreferenceSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
 
-                endRecurrFormatted = userPreferenceSlot.end_recurring.strftime('%Y-%m-%dT%H:%M:%S')
 
                 #print(endRecurrFormatted)
 
                 if userPreferenceSlot.start_recurring != None and userPreferenceSlot.end_recurring != None:
+                    endRecurrFormatted = userPreferenceSlot.end_recurring.strftime('%Y-%m-%dT%H:%M:%S')
+
                     conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True, endRecurrFormatted)
                     print(conferenceLink)
                 else:
