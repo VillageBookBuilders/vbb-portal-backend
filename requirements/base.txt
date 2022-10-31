@@ -28,7 +28,7 @@ flower==1.0.0  # https://github.com/mher/flower
 # DRF-spectacular for api documentation
 flower==1.0.0  # https://github.com/mher/flower
 hiredis==2.0.0  # https://github.com/redis/hiredis-py
-Pillow==9.1.0  # https://github.com/python-pillow/Pillow
+Pillow==9.3.0  # https://github.com/python-pillow/Pillow
 python-slugify==6.1.2  # https://github.com/un33k/python-slugify
 pytz==2022.1  # https://github.com/stub42/pytz
 redis==4.2.2  # https://github.com/redis/redis-py
