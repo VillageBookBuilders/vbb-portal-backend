@@ -2,6 +2,7 @@ import json
 from configparser import SectionProxy
 from azure.identity import DeviceCodeCredential, ClientSecretCredential
 from msgraph.core import GraphClient
+import datetime
 
 class Graph:
     settings: SectionProxy
@@ -41,7 +42,7 @@ class Graph:
 
         endpoint = '/users'
         # Only request specific properties
-        select = 'displayName,id,mail'
+        select = 'displayName,id,mail, userPrincipalName'
         # Get at most 25 results
         top = 25
         # Sort by display name
@@ -52,18 +53,36 @@ class Graph:
         return users_response.json()
 
 
-    def createEvent(self, mentorName, mentorEmail, directorEmail, start_time, end_time, calendar_id, isRecurring, recurringEndDate=None):
+    def createEvent(self, studentName, mentorName, mentorEmail, directorEmail, start_time, end_time, isRecurring, recurringEndDate):
         self.ensure_graph_for_app_only_auth()
-        endpoint = '/me/events'
+
+        users = self.get_users()['value']
+
+        userId = users[0]['userPrincipalName']
+
+        print(userId)
+
+        #mentor@vbbmentoring.onmicrosoft.com
+        endpoint = '/users/'+userId+'/calendar/events'
 
         request_url = f'{endpoint}'
 
+        event = {}
+
+
         if isRecurring:
+            endRecurrDayOfWeek = datetime.datetime.strptime(recurringEndDate,'%Y-%m-%dT%H:%M:%S').strftime('%A')
+
+            startRecurrDate = datetime.datetime.strptime(start_time,'%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+            endRecurrDate = datetime.datetime.strptime(recurringEndDate,'%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+
+            print(endRecurrDayOfWeek)
+
             event = {
-              "subject": "Test Calendar",
+              "subject": "VBB Mentoring Session /w " + studentName,
               "body": {
                 "contentType": "HTML",
-                "content": "Does this time work for you?"
+                "content": "VBB Mentoring Session"
               },
               "start": {
                   "dateTime": start_time,
@@ -81,6 +100,12 @@ class Graph:
                   "emailAddress": {
                     "address":mentorEmail,
                     "name": mentorName
+                  },
+                  "type": "required"
+                },
+                {
+                  "emailAddress": {
+                    "address":directorEmail,
                   },
                   "type": "required"
                 }
@@ -89,20 +114,21 @@ class Graph:
                 "pattern": {
                   "type": "weekly",
                   "interval": 1,
-                  "daysOfWeek": [ "Thursday" ]
+                  "daysOfWeek": [ endRecurrDayOfWeek ]
+
                 },
-                "range": { "startDate": start_time, "endDate":recurringEndDate, "type": "endDate" }
+                "range": { "startDate": startRecurrDate, "endDate":endRecurrDate, "type": "endDate" }
               },
-              "allowNewTimeProposals": True,
-              "isOnlineMeeting": False,
+              "allowNewTimeProposals": False,
+              "isOnlineMeeting": True,
               "onlineMeetingProvider": "teamsForBusiness"
             }
         else:
             event = {
-              "subject": "Test Calendar",
+              "subject": "VBB Mentoring Session /w " + studentName,
               "body": {
                 "contentType": "HTML",
-                "content": "Does this time work for you?"
+                "content": "VBB Mentoring Session"
               },
               "start": {
                   "dateTime": start_time,
@@ -122,13 +148,23 @@ class Graph:
                     "name": mentorName
                   },
                   "type": "required"
+                },
+                {
+                  "emailAddress": {
+                    "address":directorEmail,
+                  },
+                  "type": "required"
                 }
               ],
-              "allowNewTimeProposals": True,
-              "isOnlineMeeting": False,
+              "allowNewTimeProposals": False,
+              "isOnlineMeeting": True,
               "onlineMeetingProvider": "teamsForBusiness"
             }
 
+        jsonPayload = json.dumps(event)
+        print(jsonPayload)
 
-        users_response = self.app_client.api(request_url).post(event)
+        users_response = self.app_client.post(request_url, data=jsonPayload, headers={'Content-Type': 'application/json'})
+
+        print(users_response)
         return users_response.json()

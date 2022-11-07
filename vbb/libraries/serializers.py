@@ -226,6 +226,7 @@ class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
     end_time = serializers.CharField(required=False, max_length=1024)
     start_recurring = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=1024)
     end_recurring = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=1024)
+    conference_type = serializers.CharField(required=False, max_length=1024, allow_null=True, allow_blank=True)
 
 
 '''
