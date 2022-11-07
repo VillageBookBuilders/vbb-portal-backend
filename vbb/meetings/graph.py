@@ -61,9 +61,10 @@ class Graph:
         userId = users[0]['userPrincipalName']
 
         print(userId)
+        #endpoint = '/users/'+userId+'/calendar/events'
+        endpoint = '/users/mentor@vbbmentoring.onmicrosoft.com/calendar/events'
 
         #mentor@vbbmentoring.onmicrosoft.com
-        endpoint = '/users/'+userId+'/calendar/events'
 
         request_url = f'{endpoint}'
 
