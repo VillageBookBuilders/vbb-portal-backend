@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from vbb.users.models import User
-from vbb.profiles.models import MentorProfile, StudentProfile
+from vbb.profiles.models import MentorProfile, StudentProfile, LibrarianProfile
 
 from vbb.libraries.models import Announcement, Library, LibraryComputerSlots, UserPreferenceSlot, Computer, ComputerReservation
 from vbb.libraries.serializers import LibrarySerializer, LibraryWithComputersSerializer
@@ -533,12 +533,12 @@ class UserPreferenceSlotViews(APIView):
 
         try:
 
-            if user.is_student == True:
+            if user.role <= 1 :
                 userSlots = UserPreferenceSlot.objects.filter(student=user.pk)
-            elif user.is_mentor == True:
+            elif user.role == 2:
                 userSlots = UserPreferenceSlot.objects.filter(mentor=user.pk)
             else:
-                return Response({"error": "User must be a mentor or student to make a preference slot."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "User must be a mentor or student to get a preference slot."}, status=status.HTTP_400_BAD_REQUEST)
 
         except UserPreferenceSlot.DoesNotExist:
             return Response({"error": "No user slots with this userId could be found."}, status=status.HTTP_400_BAD_REQUEST)
@@ -553,8 +553,8 @@ class UserPreferenceSlotViews(APIView):
 
 
                 print(serializer.validated_data)
-                student = serializer.validated_data["student"]
-                # mentor = serializer.validated_data["mentor"]
+                # student = serializer.validated_data["student"]
+                mentor = serializer.validated_data["mentor"]
                 lib_computer_slot = serializer.validated_data["lib_computer_slot"]
                 start_time = serializer.validated_data["start_time"]
                 end_time = serializer.validated_data["end_time"]
@@ -571,22 +571,22 @@ class UserPreferenceSlotViews(APIView):
                 availableSlot = {}
 
 
-                studentProfileObj = None
+                mentorProfileObj = None
 
                 try:
-                    studentObj = User.objects.get(pk=int(student))
+                    mentorObj = User.objects.get(pk=int(mentor))
                 except User.DoesNotExist:
                     return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
                 try:
-                    studentProfileObj = StudentProfile.objects.get(user=studentObj)
+                    mentorProfileObj = MentorProfile.objects.get(user=mentorObj)
                 except StudentProfile.DoesNotExist:
                     return Response({"error": "StudentProfile with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-                if studentProfileObj.approval_status != "Approved":
+                if mentorProfileObj.approval_status != "Approved":
                     return Response({"error": "You are not approved yet."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -594,6 +594,13 @@ class UserPreferenceSlotViews(APIView):
                     availableSlot = LibraryComputerSlots.objects.get(uniqueID=lib_computer_slot)
                 except LibraryComputerSlots.DoesNotExist:
                     return Response({"error": "LibraryComputerSlot with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+                try:
+                    librarians = LibrarianProfile.objects.filter(library=availableSlot.library)
+                except LibrarianProfile.DoesNotExist:
+                    return Response({"error": "LibrarianProfile with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
 
                 try:
                     reservedSlots = UserPreferenceSlot.objects.filter(computer_slot=availableSlot, start_time__contains=start_time, end_time__contains=end_time)
@@ -665,7 +672,7 @@ class UserPreferenceSlotViews(APIView):
                         numOfSessionHours = hour_diff
                         print(numOfSessionHours)
 
-                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, student=studentObj, is_recurring=True)
+                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, is_recurring=True)
                         userSlot.save()
                         userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -673,7 +680,7 @@ class UserPreferenceSlotViews(APIView):
                         computerReservationsList = []
                         #Make Reccurring Object Creation Logic
                         #Create the inital day of reservation
-                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
+                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
                         newComputerReserve.save()
                         computerReservationsList.append(newComputerReserve)
 
@@ -692,7 +699,7 @@ class UserPreferenceSlotViews(APIView):
                             print(formattedStartDate)
                             print(formattedEndDate)
 
-                            newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
+                            newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, mentor=mentorObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
                             newComputerReserve.save()
                             computerReservationsList.append(newComputerReserve)
 
@@ -702,10 +709,10 @@ class UserPreferenceSlotViews(APIView):
 
                     else:
                         #Create Single Reservation Object
-                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, student=studentObj)
+                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, mentor=mentorObj)
                         userSlot.save()
                         userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
-                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
+                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
                         newComputerReserve.save()
                         computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
                         print(computerReserveSerializer.data)
@@ -763,7 +770,7 @@ class UserPreferenceSlotViews(APIView):
 
 
 
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, student=studentObj)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -771,7 +778,7 @@ class UserPreferenceSlotViews(APIView):
                             computerReservationsList = []
                             #Make Reccurring Object Creation Logic
                             #Create the inital day of reservation
-                            newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4())
+                            newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorObj, computer=selectedComputer, transaction_id=uuid.uuid4())
                             newComputerReserve.save()
                             computerReservationsList.append(newComputerReserve)
 
@@ -790,7 +797,7 @@ class UserPreferenceSlotViews(APIView):
                                 print(formattedStartDate)
                                 print(formattedEndDate)
 
-                                newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4())
+                                newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, mentor=mentorObj, computer=selectedComputer, transaction_id=uuid.uuid4())
                                 newComputerReserve.save()
                                 computerReservationsList.append(newComputerReserve)
 
@@ -799,14 +806,35 @@ class UserPreferenceSlotViews(APIView):
                             print(computerReserveSerializer.data)
 
                         else:
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, student=studentObj)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, mentor=mentorObj)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
-                            newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4())
+                            newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorObj, computer=selectedComputer, transaction_id=uuid.uuid4())
                             newComputerReserve.save()
                             computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
                             print(computerReserveSerializer.data)
+
+
+                #Email for Librarian.
+                msg = EmailMessage(
+                  from_email='mentor@villagebookbuilders.org',
+                  to=[librarians[0].user.email],
+                )
+                link = '/'
+                msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
+                msg.dynamic_template_data = {
+                  "first_name": mentorObj.first_name,
+                  "btn_link": link
+                }
+                msg.subject = "A mentor has created a new preference slot. Sign in now to assign them a student."
+                print(msg.dynamic_template_data)
+
+                try:
+                    msg.send(fail_silently=False)
+                except Exception as e:
+                    print(e)
+
 
 
                 return Response(userSlotSerializer.data, status=status.HTTP_201_CREATED)
@@ -1444,7 +1472,9 @@ class BookComputerReservationViews(APIView):
             serializer = serializers.UpdateComputerReservationSerializer(data=request.data)
             if serializer.is_valid():
                 uniqueID = serializer.validated_data["unique_id"]
-                mentor = serializer.validated_data["mentor"]
+                #mentor = serializer.validated_data["mentor"]
+                student = serializer.validated_data["student"]
+
                 conferenceType = serializer.validated_data["conference_type"]
                 start_time = serializer.validated_data["start_time"]
                 end_time = serializer.validated_data["end_time"]
@@ -1461,36 +1491,36 @@ class BookComputerReservationViews(APIView):
 
 
                 try:
-                    mentorUser = User.objects.get(pk=mentor)
+                    studentUser = User.objects.get(pk=student)
                 except User.DoesNotExist:
                     return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
                 try:
-                    mentorProfile = MentorProfile.objects.get(user=mentorUser.pk)
-                except MentorProfile.DoesNotExist:
-                    return Response({"error": "Mentor Profile with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+                    studentProfile = StudentProfile.objects.get(user=studentUser.pk)
+                except StudentProfile.DoesNotExist:
+                    return Response({"error": "Student Profile with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                if mentorProfile.approval_status != "Approved":
-                    return Response({"error": "You have not been approved to book sessions. Please wait unil we've approved your profile."}, status=status.HTTP_400_BAD_REQUEST)
+                # if mentorProfile.approval_status != "Approved":
+                #     return Response({"error": "You have not been approved to book sessions. Please wait unil we've approved your profile."}, status=status.HTTP_400_BAD_REQUEST)
 
 
                 try:
                     userPreferenceSlot = UserPreferenceSlot.objects.get(uniqueID=uniqueID)
-                except ComputerReservation.DoesNotExist:
+                except UserPreferenceSlot.DoesNotExist:
                     return Response({"error": "UserPreferenceSlot with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-                userPreferenceSlot.mentor = mentorUser
+                userPreferenceSlot.student = studentUser
                 userPreferenceSlot.save()
 
-                studentUser = userPreferenceSlot.student
+                mentorUser = userPreferenceSlot.mentor
 
                 try:
-                    existingComputerReservation = ComputerReservation.objects.filter(start_time=start_time, end_time=end_time, mentor=mentor)
+                    existingComputerReservation = ComputerReservation.objects.filter(start_time=start_time, end_time=end_time, student=student)
 
                     if existingComputerReservation:
-                        return Response({"error": "This mentor already has a booked session at this time."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"error": "This student already has a booked session at this time."}, status=status.HTTP_400_BAD_REQUEST)
 
                 except Exception:
                     return Response({"error": "Server error occured"}, status=status.HTTP_400_BAD_REQUEST)
@@ -1524,7 +1554,7 @@ class BookComputerReservationViews(APIView):
                 id = conferenceLink["id"]
 
                 for reserve in activeComputerReservations:
-                    reserve.mentor = mentorUser
+                    reserve.student = studentUser
                     reserve.conferenceURL = link
                     reserve.meetingID = id
                     reserve.save()
