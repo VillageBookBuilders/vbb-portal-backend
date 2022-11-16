@@ -18,6 +18,7 @@ import uuid
 from datetime import datetime, timedelta
 from django.utils import timezone
 from vbb.meetings.api import generateCalendarEvent
+from django.core.mail import EmailMessage, send_mail
 
 
 
@@ -561,6 +562,15 @@ class UserPreferenceSlotViews(APIView):
                 start_recurring = None
                 end_recurring = None
 
+                conferenceType = None
+
+
+                try:
+                    conferenceType = serializer.validated_data["conference_type"]
+                except KeyError:
+                    conferenceType = None
+
+
                 try:
                     start_recurring = serializer.validated_data["start_recurring"]
                     end_recurring = serializer.validated_data["end_recurring"]
@@ -672,7 +682,7 @@ class UserPreferenceSlotViews(APIView):
                         numOfSessionHours = hour_diff
                         print(numOfSessionHours)
 
-                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, is_recurring=True)
+                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, is_recurring=True, conference_type=conferenceType)
                         userSlot.save()
                         userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -709,7 +719,7 @@ class UserPreferenceSlotViews(APIView):
 
                     else:
                         #Create Single Reservation Object
-                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, mentor=mentorObj)
+                        userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
                         userSlot.save()
                         userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
                         newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorObj, computer=availableComputers[0], transaction_id=uuid.uuid4())
@@ -770,7 +780,7 @@ class UserPreferenceSlotViews(APIView):
 
 
 
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -806,7 +816,7 @@ class UserPreferenceSlotViews(APIView):
                             print(computerReserveSerializer.data)
 
                         else:
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, mentor=mentorObj)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -822,9 +832,10 @@ class UserPreferenceSlotViews(APIView):
                   to=[librarians[0].user.email],
                 )
                 link = '/'
-                msg.template_id = "d-e5a5f3e91ebe4621a24355673ae255f2"
+                msg.template_id = "d-67c26ccc234746beacdb03ea6cee97b8"
                 msg.dynamic_template_data = {
                   "first_name": mentorObj.first_name,
+                  "last_name": mentorObj.last_name,
                   "btn_link": link
                 }
                 msg.subject = "A mentor has created a new preference slot. Sign in now to assign them a student."
@@ -877,7 +888,7 @@ class UserPreferenceSlotViews(APIView):
                     mentor = None
                     start_recurring = None
                     end_recurring = None
-
+                    studentObj = None
                     try:
                         start_time = serializer.validated_data["start_time"]
                         end_time = serializer.validated_data["end_time"]
@@ -912,21 +923,16 @@ class UserPreferenceSlotViews(APIView):
                     except KeyError:
                         conferenceType = None
 
-
-                    if student:
-                        student = User.objects.get(pk=student)
-                        userSlot.student = student
-
                     try:
-                        studentObj = student
+                        studentObj = User.objects.get(pk=student)
+                        userSlot.student = studentObj
                     except User.DoesNotExist:
                         return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                    print(mentor)
-                    if mentor:
-                        mentor = User.objects.get(pk=mentor)
-                        userSlot.mentor = mentor
-                        print(mentor)
+                    if student:
+                        studentUser = User.objects.get(pk=student)
+                        userSlot.student = studentUser
+                        print(studentUser)
                         print(reservations)
 
                         if len(reservations) == 0:
@@ -1162,33 +1168,55 @@ class UserPreferenceSlotViews(APIView):
 
                     userSlot.save()
 
-                    if mentor:
+                    #if student:
+                        #
+                        # conferenceURL = ''
+                        # conferenceId = ''
+                        #
+                        # directorEmail = 'mentor@villagebookbuilders.org'
+                        # username = studentObj.first_name + ' ' + studentObj.last_name
+                        #
+                        # start = start_time.strip('Z')
+                        # end = end_time.strip('Z')
+                        # endRecurring = end_recurring.strip('Z')
+                        #
+                        # if start_recurring != None and end_recurring != None:
+                        #     conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, endRecurring, conferenceType)
+                        #     conferenceURL = conferenceLink["link"]
+                        #     conferenceId = conferenceLink["id"]
+                        # else:
+                        #     conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, None, conferenceType)
+                        #     conferenceURL = conferenceLink["link"]
+                        #     conferenceId = conferenceLink["id"]
 
-                        conferenceURL = ''
-                        conferenceId = ''
+                        # for resev in reservations:
+                        #     resev.mentor = mentor
+                        #     resev.conferenceURL = conferenceURL
+                        #     resev.meetingID = conferenceId
+                        #     resev.save()
+                        #     print(resev)
 
-                        directorEmail = 'mentor@villagebookbuilders.org'
-                        username = studentObj.first_name + ' ' + studentObj.last_name
+                    #Email to Mentor.
+                    msg = EmailMessage(
+                      from_email='mentor@villagebookbuilders.org',
+                      to=[mentorObj.email],
+                    )
+                    link = '/'
+                    msg.template_id = "d-e7ad975f9ab1495ab5418fe66997a73e"
+                    msg.dynamic_template_data = {
+                      "first_name": studentObj.first_name,
+                      "last_name": studentObj.last_name,
+                      "username": studentObj.username,
+                      "btn_link": link
+                    }
+                    msg.subject = "A mentor has created a new preference slot. Sign in now to assign them a student."
+                    print(msg.dynamic_template_data)
 
-                        start = start_time.strip('Z')
-                        end = end_time.strip('Z')
-                        endRecurring = end_recurring.strip('Z')
+                    try:
+                        msg.send(fail_silently=False)
+                    except Exception as e:
+                        print(e)
 
-                        if start_recurring != None and end_recurring != None:
-                            conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, endRecurring, conferenceType)
-                            conferenceURL = conferenceLink["link"]
-                            conferenceId = conferenceLink["id"]
-                        else:
-                            conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, None, conferenceType)
-                            conferenceURL = conferenceLink["link"]
-                            conferenceId = conferenceLink["id"]
-
-                        for resev in reservations:
-                            resev.mentor = mentor
-                            resev.conferenceURL = conferenceURL
-                            resev.meetingID = conferenceId
-                            resev.save()
-                            print(resev)
 
                     userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
                     return Response(userSlotSerializer.data, status=status.HTTP_200_OK)
