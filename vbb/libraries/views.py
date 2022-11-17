@@ -889,6 +889,8 @@ class UserPreferenceSlotViews(APIView):
                     start_recurring = None
                     end_recurring = None
                     studentObj = None
+                    mentorObj = None
+
                     try:
                         start_time = serializer.validated_data["start_time"]
                         end_time = serializer.validated_data["end_time"]
@@ -928,6 +930,13 @@ class UserPreferenceSlotViews(APIView):
                         userSlot.student = studentObj
                     except User.DoesNotExist:
                         return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+                    try:
+                        mentorObj = User.objects.get(pk=mentor)
+                    except User.DoesNotExist:
+                        return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
 
                     if student:
                         studentUser = User.objects.get(pk=student)
@@ -1168,33 +1177,35 @@ class UserPreferenceSlotViews(APIView):
 
                     userSlot.save()
 
-                    #if student:
-                        #
-                        # conferenceURL = ''
-                        # conferenceId = ''
-                        #
-                        # directorEmail = 'mentor@villagebookbuilders.org'
-                        # username = studentObj.first_name + ' ' + studentObj.last_name
-                        #
-                        # start = start_time.strip('Z')
-                        # end = end_time.strip('Z')
-                        # endRecurring = end_recurring.strip('Z')
-                        #
-                        # if start_recurring != None and end_recurring != None:
-                        #     conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, endRecurring, conferenceType)
-                        #     conferenceURL = conferenceLink["link"]
-                        #     conferenceId = conferenceLink["id"]
-                        # else:
-                        #     conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, None, conferenceType)
-                        #     conferenceURL = conferenceLink["link"]
-                        #     conferenceId = conferenceLink["id"]
+                    if student:
 
-                        # for resev in reservations:
-                        #     resev.mentor = mentor
-                        #     resev.conferenceURL = conferenceURL
-                        #     resev.meetingID = conferenceId
-                        #     resev.save()
-                        #     print(resev)
+                        conferenceURL = ''
+                        conferenceId = ''
+
+                        directorEmail = 'mentor@villagebookbuilders.org'
+                        username = studentObj.first_name + ' ' + studentObj.last_name
+
+                        start = start_time.strip('Z')
+                        end = end_time.strip('Z')
+
+                        if end_recurring:
+                            endRecurring = end_recurring.strip('Z')
+
+                        if start_recurring != None and end_recurring != None:
+                            conferenceLink = generateCalendarEvent(username, mentorObj.email, directorEmail, start, end, mentorObj.email, True, endRecurring, conferenceType)
+                            conferenceURL = conferenceLink["link"]
+                            conferenceId = conferenceLink["id"]
+                        else:
+                            conferenceLink = generateCalendarEvent(username, mentorObj.email, directorEmail, start, end, mentorObj.email, False, None, conferenceType)
+                            conferenceURL = conferenceLink["link"]
+                            conferenceId = conferenceLink["id"]
+
+                        for resev in reservations:
+                            resev.student = studentObj
+                            resev.conferenceURL = conferenceURL
+                            resev.meetingID = conferenceId
+                            resev.save()
+                            print(resev)
 
                     #Email to Mentor.
                     msg = EmailMessage(
@@ -1392,11 +1403,12 @@ class ComputerReservationViews(APIView):
         except User.DoesNotExist:
             return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
+        print(user.role)
         try:
 
-            if user.is_student == True:
+            if user.role == 0 or user.role == 1:
                 userSlots = ComputerReservation.objects.filter(student=user.pk)
-            elif user.is_mentor == True:
+            elif user.role == 2:
                 userSlots = ComputerReservation.objects.filter(mentor=user.pk)
             else:
                 return Response({"error": "User must be a mentor or student to make a reservation slot."}, status=status.HTTP_400_BAD_REQUEST)
@@ -1438,7 +1450,7 @@ class ComputerReservationViews(APIView):
             serializer = serializers.UpdateComputerReservationSerializer(data=request.data)
             if serializer.is_valid():
                 uniqueID = serializer.validated_data["unique_id"]
-
+                print(serializer.validated_data)
                 try:
                     computerReservation = ComputerReservation.objects.get(uniqueID=uniqueID)
                 except ComputerReservation.DoesNotExist:
@@ -1851,6 +1863,7 @@ class LibraryComputerReservationViews(APIView):
                     # conferenceURL = serializer.validated_data["conferenceURL"]
                     #
                     # name = None
+                    student = None
                     mentor = None
                     computer = None
                     start_time = None
@@ -1866,6 +1879,11 @@ class LibraryComputerReservationViews(APIView):
                         mentor = serializer.validated_data["mentor"]
                     except KeyError:
                         mentor = None
+
+                    try:
+                        student = serializer.validated_data["student"]
+                    except KeyError:
+                        student = None
 
                     try:
                         computer = serializer.validated_data["computer"]
@@ -1897,6 +1915,16 @@ class LibraryComputerReservationViews(APIView):
                             return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_404_NOT_FOUND)
 
                         reservation.mentor = mentorUser
+
+
+                    if mentor:
+
+                        try:
+                            studentUser = User.objects.get(pk=student)
+                        except User.DoesNotExist:
+                            return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_404_NOT_FOUND)
+
+                        reservation.student = studentUser                        
 
                     if computer:
 
