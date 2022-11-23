@@ -845,10 +845,15 @@ class UserPreferenceSlotViews(APIView):
                 program = library.name
                 link = settings.FRONTEND_URL
 
+                librarian_email_addresses = []
+
+                for librarian in librarians:
+                    librarian_email_addresses.append(librarian.user.email)
+
                 #Email for Librarian.
                 msg = EmailMessage(
                   from_email='mentor@villagebookbuilders.org',
-                  to=[librarians[0].user.email],
+                  to=librarian_email_addresses,
                 )
                 msg.template_id = "d-67c26ccc234746beacdb03ea6cee97b8"
                 msg.dynamic_template_data = {
@@ -859,7 +864,6 @@ class UserPreferenceSlotViews(APIView):
                   "session_day": session_day,
                   "btn_link": link
                 }
-                msg.subject = "A mentor has created a new preference slot. Sign in now to assign them a student."
                 #print(msg.dynamic_template_data)
 
                 try:
@@ -1265,7 +1269,6 @@ class UserPreferenceSlotViews(APIView):
                       "session_day": session_day,
                       "btn_link": link
                     }
-                    msg.subject = "You've been assigned a new student. Sign in now to view your sessions."
                     #print(msg.dynamic_template_data)
 
                     try:
