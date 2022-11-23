@@ -845,7 +845,7 @@ class UserPreferenceSlotViews(APIView):
                 program = library.name
                 link = settings.FRONTEND_URL
 
-                librarian_email_addresses = []
+                librarian_email_addresses = ['mentor@villagebookbuilders.org']
 
                 for librarian in librarians:
                     librarian_email_addresses.append(librarian.user.email)
