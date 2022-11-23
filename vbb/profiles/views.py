@@ -240,7 +240,7 @@ class MentorProfileViewSet(APIView):
         date_of_birth = data.get("date_of_birth")
         crimesOrMisdemeanor = data.get("crimes_or_misdemeanor", False)
         crimesOrMisdemeanorResponses = data.get("crimes_or_misdemeanor_responses", "")
-
+        gender = data.get("gender", "")
 
         # Look up Organization by corp code
         # try:
@@ -260,6 +260,9 @@ class MentorProfileViewSet(APIView):
 
         if date_of_birth:
             user.date_of_birth = datetime.strptime(date_of_birth, "%m/%d/%Y")
+
+        if gender:
+            user.gender = gender
 
         # user.is_mentor = True
         user.save()

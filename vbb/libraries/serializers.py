@@ -212,6 +212,7 @@ class CreateUserPreferenceSlotSerializer(serializers.Serializer):
     student = serializers.IntegerField(required=False)
     mentor = serializers.IntegerField(required=False)
     lib_computer_slot = serializers.CharField(required=True)
+    conference_type = serializers.CharField(required=True)
     start_time = serializers.CharField(required=True, max_length=1024)
     end_time = serializers.CharField(required=True, max_length=1024)
     start_recurring = serializers.CharField(required=False, max_length=1024)
