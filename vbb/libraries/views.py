@@ -1206,6 +1206,9 @@ class UserPreferenceSlotViews(APIView):
                     if end_recurring:
                         userSlot.end_recurring = end_recurring
 
+                    if conferenceType:
+                        userSlot.conference_type = conferenceType
+
 
                     userSlot.save()
 
@@ -1576,7 +1579,7 @@ class BookComputerReservationViews(APIView):
                 # student_attended = serializer.validated_data["student_attended"]
 
                 computerReservation = {}
-
+                print(conferenceType)
 
                 try:
                     studentUser = User.objects.get(pk=student)
@@ -1598,6 +1601,8 @@ class BookComputerReservationViews(APIView):
                 except UserPreferenceSlot.DoesNotExist:
                     return Response({"error": "UserPreferenceSlot with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
+                if conferenceType:
+                    userPreferenceSlot.conference_type = conferenceType
 
                 userPreferenceSlot.student = studentUser
                 userPreferenceSlot.save()
