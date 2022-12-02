@@ -1462,7 +1462,7 @@ class ComputerReservationViews(APIView):
             elif user.role == 2:
                 userSlots = ComputerReservation.objects.filter(mentor=user.pk)
             else:
-                return Response({"error": "User must be a mentor or student to make a reservation slot."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "User must be a mentor or student to get a reservation slot."}, status=status.HTTP_400_BAD_REQUEST)
 
         except ComputerReservation.DoesNotExist:
             return Response({"error": "No reservation slots with this userId could be found."}, status=status.HTTP_400_BAD_REQUEST)
