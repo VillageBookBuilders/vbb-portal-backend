@@ -87,6 +87,7 @@ LOCAL_APPS = [
     "vbb.organizations",
     "vbb.subjects",
     "vbb.users",
+    "vbb.meetings",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -452,16 +453,16 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_LINK = FRONTEND_URL + "/register/confirm/"
 
-CORS_ALLOWED_ORIGINS = [
-    "https://app.villagebookbuilders.org",
-    "http://app.villagebookbuilders.org",
-    "https://portal.villagebookbuilders.org",
-    "https://portal.villagebookbuilders.org",
-    "https://test.villagebookbuilders.org",
-    "http://localhost:3000",
-    "https://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://jellyfish-app-7iuqd.ondigitalocean.app"
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://app.villagebookbuilders.org",
+#     "http://app.villagebookbuilders.org",
+#     "https://portal.villagebookbuilders.org",
+#     "https://portal.villagebookbuilders.org",
+#     "https://test.villagebookbuilders.org",
+#     "http://localhost:3000",
+#     "https://localhost:3000",
+#     "http://127.0.0.1:3000",
+#     "https://jellyfish-app-7iuqd.ondigitalocean.app"
+# ]
 CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+#CORS_ORIGIN_WHITELIST = ['http://localhost:3000']

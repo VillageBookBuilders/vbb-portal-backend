@@ -93,6 +93,7 @@ class UserPreferenceSlot(models.Model):
     end_recurring = models.DateTimeField(default=None, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     is_recurring = models.BooleanField(default=False)
+    conference_type = models.CharField(max_length=1024, null=True, blank=True, default="google")
 
     def __str__(self):
         return str(self.uniqueID)

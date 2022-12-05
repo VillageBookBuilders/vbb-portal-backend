@@ -21,6 +21,8 @@ import environ
 import json
 import base64
 from pathlib import Path
+import configparser
+from vbb.meetings.graph import Graph
 
 # from dateutil.relativedelta import relativedelta
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -123,7 +125,7 @@ class google_apis:
       r = s.post(url, headers=headers, data=data)
     return (primaryEmail, pwd)
 
-  def calendar_event(self, mentorFirstName, mentorEmail, directorEmail, start_time, end_date, calendar_id, room, duration):
+  def calendar_event(self, mentorFirstName, mentorEmail, directorEmail, start_time, end_date, calendar_id, room, duration, isRecurring, recurringEndDate=None):
     calendar_service = build('calendar', 'v3', credentials=self.__mentor_cred)
     timezone = 'UTC'
     start_date_time_obj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S')
@@ -132,42 +134,92 @@ class google_apis:
     end_date_formated = end_date_formated.replace('-', '')
     end_date_formated += 'Z'
 
-    event = {
-      'summary': mentorFirstName + ' - VBB Mentoring Session',
-      'start': {
-        'dateTime': start_date_time_obj.strftime("%Y-%m-%dT%H:%M:%S"),
-        'timeZone': timezone,
-      },
-      'end': {
-        'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-        'timeZone': timezone,
-      },
-      'recurrence': [
-        'RRULE:FREQ=WEEKLY'
-      ],
-      'attendees': [
-        {'email': mentorEmail},
-        {'email': directorEmail},
-        {'email': room, 'resource': "true"}
-      ],
-      'reminders': {
-        'useDefault': False,
-        'overrides': [
-        {'method': 'email', 'minutes': 24 * 60},  # reminder 24 hrs before event
-        # pop up reminder, 10 min before event
-        {'method': 'popup', 'minutes': 10},
-        ],
-      },
-      'conferenceData': {
-        'createRequest': {
-          'requestId': ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-        }
-      },
-    }
+    if recurringEndDate:
+        endrecurr_obj = datetime.strptime(recurringEndDate, '%Y-%m-%dT%H:%M:%S')
+        endrecurr_obj_formated = recurringEndDate.replace(':', '')
+        endrecurr_obj_formated = endrecurr_obj_formated.replace('-', '')
+        endrecurr_obj_formated += 'Z'
+        print(endrecurr_obj_formated)
 
+
+    event = {}
+
+
+    if isRecurring == True:
+        recurrenceString = 'RRULE:FREQ=WEEKLY;UNTIL='+ endrecurr_obj_formated
+        print(recurrenceString)
+
+        event = {
+          'summary': mentorFirstName + ' - VBB Mentoring Session',
+          'start': {
+            'dateTime': start_date_time_obj.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'end': {
+            'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'recurrence': [
+            recurrenceString
+          ],
+          'attendees': [
+            {'email': mentorEmail},
+            {'email': directorEmail},
+            {'email': room, 'resource': "true"}
+          ],
+          'reminders': {
+            'useDefault': False,
+            'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},  # reminder 24 hrs before event
+            # pop up reminder, 10 min before event
+            {'method': 'popup', 'minutes': 10},
+            ],
+          },
+          'conferenceData': {
+            'createRequest': {
+              'requestId': ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            }
+          },
+        }
+
+    else:
+        event = {
+          'summary': mentorFirstName + ' - VBB Mentoring Session',
+          'start': {
+            'dateTime': start_date_time_obj.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'end': {
+            'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            'timeZone': timezone,
+          },
+          'attendees': [
+            {'email': mentorEmail},
+            {'email': directorEmail},
+            {'email': room, 'resource': "true"}
+          ],
+          'reminders': {
+            'useDefault': False,
+            'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},  # reminder 24 hrs before event
+            # pop up reminder, 10 min before event
+            {'method': 'popup', 'minutes': 10},
+            ],
+          },
+          'conferenceData': {
+            'createRequest': {
+              'requestId': ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            }
+          },
+        }
+
+    print(event)
 
     event_obj = calendar_service.events().insert(calendarId=calendar_id, body=event,
                                         sendUpdates="all", conferenceDataVersion=1).execute()
+
+    print(event_obj)
+
     print ("hangoutlink", event_obj['hangoutLink'])
 
     payload = {"id":event_obj['id'], "link": event_obj['hangoutLink']}
@@ -348,24 +400,118 @@ class google_apis:
     #return updated_event['recurrence'] = []
 
 
+class ms_apis:
+  def __init__(self):
+    env = environ.Env()
+    # the proper scopes are needed to access specific Google APIs
+    # see https://developers.google.com/identity/protocols/oauth2/scopes
+    config = configparser.ConfigParser()
 
+    #configPath = os.path.join(os.getcwd(),'ms_config.cfg')
 
+    path = os.path.dirname(os.path.realpath(__file__))
+    configPath = os.path.join(path,'ms_config.cfg')
 
-def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location):
-    g = google_apis()
-    eventObj = g.calendar_event(
-            studentName,
-            mentorEmail,
-            directorEmail,
-            dateStart, dateEnd,
-            "c_nqd1aak2qnc6j4ejejo787qk1o@group.calendar.google.com",
-            location,
-            "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
+    config.read(configPath)
+    # print(configPath)
+    # print(config)
+    # print(config.sections())
+    self.azure_settings = config['azure']
+
+    self.graph: Graph = Graph(self.azure_settings)
+    env.read_env(str(ROOT_DIR / ".env"))
+
+    #serviceKey = env("GOOGLE_SERVICE_KEY", default="")
+  def generateMSCalendarEvent(graph: Graph, studentName, mentorName, mentorEmail, directorEmail, start_time, end_time, isRecurring, recurringEndDate):
+    # Note: if using app_client, be sure to call
+    # ensure_graph_for_app_only_auth before using it
+    #print(self)
+    print(graph.graph)
+    graph.graph.ensure_graph_for_app_only_auth()
+
+    users = graph.graph.get_users()
+    print(users)
+    createdEvent = graph.graph.createEvent(studentName, mentorName, mentorEmail, directorEmail, start_time, end_time, isRecurring, recurringEndDate)
+    # TODO
+    print(createdEvent)
+    return createdEvent
+
+  def display_access_token(graph: Graph):
+    token = graph.get_user_token()
+    print('User token:', token, '\n')
+
+  def list_calendar_events(graph: Graph):
+    # TODO
+    return
+
+  def list_users(graph: Graph):
+    users_page = graph.get_users()
+
+    # Output each users's details
+    for user in users_page['value']:
+        print('User:', user['displayName'])
+        print('  ID:', user['id'])
+        print('  Email:', user['mail'])
+
+    # If @odata.nextLink is present
+    more_available = '@odata.nextLink' in users_page
+    print('\nMore users available?', more_available, '\n')
+
+def generateCalendarEvent(studentName, mentorEmail, directorEmail, dateStart, dateEnd, location, isRecurring, recurringEndDate, conferenceType="google"):
+    eventObj = {}
+    print(recurringEndDate)
+    if conferenceType == "google":
+        g = google_apis()
+        eventObj = g.calendar_event(
+                studentName,
+                mentorEmail,
+                directorEmail,
+                dateStart, dateEnd,
+                "c_nqd1aak2qnc6j4ejejo787qk1o@group.calendar.google.com",
+                location,
+                "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com", isRecurring, recurringEndDate)
+    elif conferenceType == "ms-teams":
+         m = ms_apis()
+         msEvent = m.generateMSCalendarEvent(
+                studentName,
+               "Mentor",
+               mentorEmail,
+               directorEmail,
+               dateStart,
+               dateEnd,
+               isRecurring,
+               recurringEndDate)
+
+         eventObj = {"link":msEvent["onlineMeeting"]["joinUrl"],"id":msEvent["id"]}
+    else:
+        eventObj = None
+
     return eventObj
 
   # FOR TESTING PURPOSES -- REMOVE LATER
-def testFunction():
-  g = google_apis()
+# def testFunction():
+#   m = ms_apis()
+#   m.generateMSCalendarEvent(
+#         "Test Student",
+#         "Mentor One",
+#         "chris@myrelaytech.com",
+#         "director@villagebookbuilders.org",
+#         "2022-12-23T13:30:00",
+#         "2022-12-23T14:00:00",
+#         False,
+#         "2022-12-23T14:00:00")
+
+  # g.calendar_event(
+  #       "Mentor One",
+  #       "chris@myrelaytech.com",
+  #       "chris@myrelaytech.com",
+  #       "2020-12-23T13:30:00",
+  #       "2020-12-23T14:00:00",
+  #       "-",
+  #      "ximena.rodriguez1@villagementors.org",
+  #     "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
+
+  #g = google_apis()
   #g.shift_event("c_oha2uv7abp2vs6jlrl96aeoje8@group.calendar.google.com","0vjr0aj0e3nv1tmc2ui2mtshbi")
 
 
@@ -399,14 +545,15 @@ def testFunction():
 #     cc=["edringger@gmail.com"]
 #   )
 #
-  g.calendar_event(
-        "TestXime",
-        "ximena.rodriguez1@villagementors.org",
-        "chris@myrelaytech.com",
-        "2020-12-23T23:30:00", "2020-12-30T22:00:00",
-        "c_oha2uv7abp2vs6jlrl96aeoje8@group.calendar.google.com",
-       "ximena.rodriguez1@villagementors.org",
-      "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
+# g.calendar_event(
+#       "Mentor One",
+#       "chris@myrelaytech.com",
+#       "chris@myrelaytech.com",
+#       "2020-12-23T13:30:00",
+#       "2020-12-23T14:00:00",
+#       "-",
+#      "ximena.rodriguez1@villagementors.org",
+#     "c_188apa1pg08nkg9pn621lmhbfc0f04gnepkmor31ctim4rrfddh7aqbcchin4spedtp6e@resource.calendar.google.com")
 
 #  g.update_event(
 #
