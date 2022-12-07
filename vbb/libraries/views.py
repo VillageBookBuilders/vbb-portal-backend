@@ -787,7 +787,7 @@ class UserPreferenceSlotViews(APIView):
 
 
 
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, is_recurring=True, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 

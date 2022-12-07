@@ -217,6 +217,7 @@ class CreateUserPreferenceSlotSerializer(serializers.Serializer):
     end_time = serializers.CharField(required=True, max_length=1024)
     start_recurring = serializers.CharField(required=False, max_length=1024)
     end_recurring = serializers.CharField(required=False, max_length=1024)
+    is_recurring = serializers.CharField(required=False, max_length=1024)
 
 
 class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
