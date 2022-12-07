@@ -787,7 +787,7 @@ class UserPreferenceSlotViews(APIView):
 
 
 
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, is_recurring=True, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -1003,6 +1003,14 @@ class UserPreferenceSlotViews(APIView):
 
                             directorEmail = 'mentor@villagebookbuilders.org'
                             username = studentObj.first_name + ' ' + studentObj.last_name
+
+                            startObj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                            endObj = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S%fZ')
+
+                            start = datetime.strftime(startObj, '%Y-%m-%dT%H:%M:%S')
+                            end = datetime.strftime(endObj, '%Y-%m-%dT%H:%M:%S')
+                            print(start)
+                            print(end)
 
 
                             start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ')
