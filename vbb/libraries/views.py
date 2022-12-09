@@ -1021,7 +1021,7 @@ class UserPreferenceSlotViews(APIView):
                             #Create Multiple  Computer Reservations if Reccurring
                             if start_recurring != None and end_recurring != None:
 
-                                conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, end_recurring, conferenceType)
+                                conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True, end_recurring, conferenceType)
                                 #print(conferenceLink)
 
                                 link = conferenceLink["link"]
@@ -1060,7 +1060,7 @@ class UserPreferenceSlotViews(APIView):
                                 computerReservationsList = []
                                 #Make Reccurring Object Creation Logic
                                 #Create the inital day of reservation
-                                newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                 newComputerReserve.save()
                                 computerReservationsList.append(newComputerReserve)
 
@@ -1079,7 +1079,7 @@ class UserPreferenceSlotViews(APIView):
                                     #print(formattedStartDate)
                                     #print(formattedEndDate)
 
-                                    newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                     newComputerReserve.save()
                                     computerReservationsList.append(newComputerReserve)
 
@@ -1089,13 +1089,13 @@ class UserPreferenceSlotViews(APIView):
 
                             else:
                                 #Create Single Reservation Object
-                                conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, conferenceType)
+                                conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False, conferenceType)
                                 #print(conferenceLink)
 
                                 link = conferenceLink["link"]
                                 id = conferenceLink["id"]
 
-                                newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                 newComputerReserve.save()
                                 computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
                                 #print(computerReserveSerializer.data)
@@ -1122,7 +1122,7 @@ class UserPreferenceSlotViews(APIView):
                                 selectedComputer = Computer.objects.get(pk=freeComputers[0])
                                 if start_recurring != None and end_recurring != None:
 
-                                    conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, end_recurring, conferenceType)
+                                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True, end_recurring, conferenceType)
                                     print(conferenceLink)
 
                                     link = conferenceLink["link"]
@@ -1161,7 +1161,7 @@ class UserPreferenceSlotViews(APIView):
                                     computerReservationsList = []
                                     #Make Reccurring Object Creation Logic
                                     #Create the inital day of reservation
-                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentor, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorUser, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                     newComputerReserve.save()
                                     computerReservationsList.append(newComputerReserve)
 
@@ -1180,7 +1180,7 @@ class UserPreferenceSlotViews(APIView):
                                         print(formattedStartDate)
                                         print(formattedEndDate)
 
-                                        newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                        newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                         newComputerReserve.save()
                                         computerReservationsList.append(newComputerReserve)
 
@@ -1190,13 +1190,13 @@ class UserPreferenceSlotViews(APIView):
 
                                 else:
 
-                                    conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, None,conferenceType)
+                                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False, None,conferenceType)
                                     print(conferenceLink)
 
                                     link = conferenceLink["link"]
                                     id = conferenceLink["id"]
 
-                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                     newComputerReserve.save()
                                     computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
                                     print(computerReserveSerializer.data)
