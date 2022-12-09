@@ -957,18 +957,20 @@ class UserPreferenceSlotViews(APIView):
                     except KeyError:
                         conferenceType = None
 
-                    try:
-                        studentObj = User.objects.get(pk=student)
-                        userSlot.student = studentObj
-                    except User.DoesNotExist:
-                        return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                    if student:
+                        try:
+                            studentObj = User.objects.get(pk=student)
+                            userSlot.student = studentObj
+                        except User.DoesNotExist:
+                            return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-                    try:
-                        mentorObj = User.objects.get(pk=mentor)
-                    except User.DoesNotExist:
-                        return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
-
+                    if mentor:
+                        try:
+                            mentorObj = User.objects.get(pk=mentor)
+                        except User.DoesNotExist:
+                            return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
                     if student:
                         studentUser = User.objects.get(pk=student)
@@ -976,53 +978,158 @@ class UserPreferenceSlotViews(APIView):
                         #print(studentUser)
                         #print(reservations)
 
-                        if len(reservations) == 0:
-                            #print('No reservations or mentor')
+                    if mentor:
+                        mentorUser = User.objects.get(pk=mentor)
+                        userSlot.mentor = mentorUser
+                        #print(studentUser)
+                        #print(reservations)
+
+                    if len(reservations) == 0:
+                        #print('No reservations or mentor')
 
 
-                            try:
-                                availableComputers = Computer.objects.filter(library=availableSlot.library)
-                            except Computer.DoesNotExist:
-                                return Response({"error": "Computers with that provided Computer Slot could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+                        try:
+                            availableComputers = Computer.objects.filter(library=availableSlot.library)
+                        except Computer.DoesNotExist:
+                            return Response({"error": "Computers with that provided Computer Slot could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
-                            if len(availableComputers) == 0:
-                                return Response({"error": "No Computers available to reserve."}, status=status.HTTP_400_BAD_REQUEST)
+                        if len(availableComputers) == 0:
+                            return Response({"error": "No Computers available to reserve."}, status=status.HTTP_400_BAD_REQUEST)
 
-                            allComputersID = []
+                        allComputersID = []
 
-                            for computer in availableComputers:
-                                allComputersID.append(computer.pk)
+                        for computer in availableComputers:
+                            allComputersID.append(computer.pk)
 
-                            try:
-                                allComputersReservations = ComputerReservation.objects.filter(start_time=start_time, end_time=end_time, computer__in=allComputersID)
-                            except ComputerReservation.DoesNotExist:
-                                return Response({"error": "ComputerReservations with that provided timeslot taken already."}, status=status.HTTP_400_BAD_REQUEST)
+                        try:
+                            allComputersReservations = ComputerReservation.objects.filter(start_time=start_time, end_time=end_time, computer__in=allComputersID)
+                        except ComputerReservation.DoesNotExist:
+                            return Response({"error": "ComputerReservations with that provided timeslot taken already."}, status=status.HTTP_400_BAD_REQUEST)
 
-                            #userSlot = None
-                            userSlotSerializer = {}
+                        #userSlot = None
+                        userSlotSerializer = {}
 
-                            directorEmail = 'mentor@villagebookbuilders.org'
-                            username = studentObj.first_name + ' ' + studentObj.last_name
-
-                            startObj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S%fZ')
-                            endObj = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S%fZ')
-
-                            start = datetime.strftime(startObj, '%Y-%m-%dT%H:%M:%S')
-                            end = datetime.strftime(endObj, '%Y-%m-%dT%H:%M:%S')
-                            print(start)
-                            print(end)
+                        directorEmail = 'mentor@villagebookbuilders.org'
+                        username = studentObj.first_name + ' ' + studentObj.last_name
 
 
-                            start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ')
-                            end = datetime.strptime(userSlot.end_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                        startStriped = userSlot.start_time.strip('Z')
+                        endStriped = userSlot.end_time.strip('Z')
+
+                        start = datetime.strptime(startStriped, '%Y-%m-%dT%H:%M:%S')
+                        end = datetime.strptime(endStriped, '%Y-%m-%dT%H:%M:%S')
+
+                        start =  start.strftime('%Y-%m-%dT%H:%M:%S')
+                        end = end.strftime('%Y-%m-%dT%H:%M:%S')
 
 
-                            if len(allComputersReservations) == 0:
-                                #Create Multiple  Computer Reservations if Reccurring
+                        if len(allComputersReservations) == 0:
+                            #Create Multiple  Computer Reservations if Reccurring
+                            if start_recurring != None and end_recurring != None:
+
+                                conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True, end_recurring, conferenceType)
+                                #print(conferenceLink)
+
+                                link = conferenceLink["link"]
+                                id = conferenceLink["id"]
+
+                                startSplit = start_time
+                                startTz = start_time.split('T')[1]
+
+                                endSplit = end_time
+                                endTz = end_time.split('T')[1]
+
+                                startRecSplit = start_recurring.split('T')[0]
+                                startRecTz = start_recurring.split('T')[1]
+
+                                endRecSplit = end_recurring.split('T')[0]
+                                endRecTz = end_recurring.split('T')[1]
+
+                                startRecurFormatted = datetime.strptime(startRecSplit, '%Y-%m-%d')
+                                endRecurFormatted = datetime.strptime(endRecSplit, '%Y-%m-%d')
+
+                                startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S%fZ')
+                                endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S%fZ')
+
+                                #print(startFormatted)
+                                #print(endFormatted)
+
+                                #Find Recurring Date Difference
+                                recurr_diff = endRecurFormatted - startRecurFormatted
+                                numberOfWeeks = recurr_diff.days // 7
+
+                                #Find Recurring Date Difference
+                                hour_diff = endFormatted - startFormatted
+                                numOfSessionHours = hour_diff
+                                #print(numOfSessionHours)
+
+                                computerReservationsList = []
+                                #Make Reccurring Object Creation Logic
+                                #Create the inital day of reservation
+                                newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                newComputerReserve.save()
+                                computerReservationsList.append(newComputerReserve)
+
+                                #Create the temporary computer reservation objects
+                                date_tmp = startRecurFormatted
+                                for week in range(0, numberOfWeeks):
+                                    #print("Computer Reservation Created")
+                                    new_start_date = date_tmp + timedelta(days=7)
+                                    date_tmp = new_start_date
+                                    new_start_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, startFormatted.hour, startFormatted.minute)
+                                    new_end_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, endFormatted.hour, endFormatted.minute)
+                                    #print(new_start_date_object)
+                                    #print(new_end_date_object)
+                                    formattedStartDate =  new_start_date_object.strftime('%Y/%m/%d')
+                                    formattedEndDate = new_end_date_object.strftime('%Y/%m/%d')
+                                    #print(formattedStartDate)
+                                    #print(formattedEndDate)
+
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                    newComputerReserve.save()
+                                    computerReservationsList.append(newComputerReserve)
+
+
+                                computerReserveSerializer = serializers.ComputerReservationSerializer(computerReservationsList, many=True)
+                                #print(computerReserveSerializer.data)
+
+                            else:
+                                #Create Single Reservation Object
+                                conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False, conferenceType)
+                                #print(conferenceLink)
+
+                                link = conferenceLink["link"]
+                                id = conferenceLink["id"]
+
+                                newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                newComputerReserve.save()
+                                computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
+                                #print(computerReserveSerializer.data)
+                        else:
+                            reservedComputers = []
+                            freeComputers = []
+
+                            for computer in allComputersReservations:
+                                reservedComputers.append(computer.computer.pk)
+                            print(reservedComputers)
+
+                            for comp in allComputersID:
+                                if comp not in reservedComputers:
+                                    freeComputers.append(comp)
+
+                            print(freeComputers)
+                            print("Reservations with computers found at this time")
+
+                            if len(freeComputers) <= 0:
+                                return Response({"error": "No free computers at this time."}, status=status.HTTP_400_BAD_REQUEST)
+                            else:
+
+
+                                selectedComputer = Computer.objects.get(pk=freeComputers[0])
                                 if start_recurring != None and end_recurring != None:
 
-                                    conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, end_recurring, conferenceType)
-                                    #print(conferenceLink)
+                                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, True, end_recurring, conferenceType)
+                                    print(conferenceLink)
 
                                     link = conferenceLink["link"]
                                     id = conferenceLink["id"]
@@ -1045,8 +1152,8 @@ class UserPreferenceSlotViews(APIView):
                                     startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S%fZ')
                                     endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S%fZ')
 
-                                    #print(startFormatted)
-                                    #print(endFormatted)
+                                    print(startFormatted)
+                                    print(endFormatted)
 
                                     #Find Recurring Date Difference
                                     recurr_diff = endRecurFormatted - startRecurFormatted
@@ -1055,151 +1162,50 @@ class UserPreferenceSlotViews(APIView):
                                     #Find Recurring Date Difference
                                     hour_diff = endFormatted - startFormatted
                                     numOfSessionHours = hour_diff
-                                    #print(numOfSessionHours)
+                                    print(numOfSessionHours)
 
                                     computerReservationsList = []
                                     #Make Reccurring Object Creation Logic
                                     #Create the inital day of reservation
-                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentorUser, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                     newComputerReserve.save()
                                     computerReservationsList.append(newComputerReserve)
 
                                     #Create the temporary computer reservation objects
                                     date_tmp = startRecurFormatted
                                     for week in range(0, numberOfWeeks):
-                                        #print("Computer Reservation Created")
+                                        print("Computer Reservation Created")
                                         new_start_date = date_tmp + timedelta(days=7)
                                         date_tmp = new_start_date
                                         new_start_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, startFormatted.hour, startFormatted.minute)
                                         new_end_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, endFormatted.hour, endFormatted.minute)
-                                        #print(new_start_date_object)
-                                        #print(new_end_date_object)
+                                        print(new_start_date_object)
+                                        print(new_end_date_object)
                                         formattedStartDate =  new_start_date_object.strftime('%Y/%m/%d')
                                         formattedEndDate = new_end_date_object.strftime('%Y/%m/%d')
-                                        #print(formattedStartDate)
-                                        #print(formattedEndDate)
+                                        print(formattedStartDate)
+                                        print(formattedEndDate)
 
-                                        newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                        newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                         newComputerReserve.save()
                                         computerReservationsList.append(newComputerReserve)
 
 
                                     computerReserveSerializer = serializers.ComputerReservationSerializer(computerReservationsList, many=True)
-                                    #print(computerReserveSerializer.data)
+                                    print(computerReserveSerializer.data)
 
                                 else:
-                                    #Create Single Reservation Object
-                                    conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, conferenceType)
-                                    #print(conferenceLink)
+
+                                    conferenceLink = generateCalendarEvent(username, mentorUser.email, directorEmail, start, end, mentorUser.email, False, None,conferenceType)
+                                    print(conferenceLink)
 
                                     link = conferenceLink["link"]
                                     id = conferenceLink["id"]
 
-                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
+                                    newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                     newComputerReserve.save()
                                     computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
-                                    #print(computerReserveSerializer.data)
-                            else:
-                                reservedComputers = []
-                                freeComputers = []
-
-                                for computer in allComputersReservations:
-                                    reservedComputers.append(computer.computer.pk)
-                                print(reservedComputers)
-
-                                for comp in allComputersID:
-                                    if comp not in reservedComputers:
-                                        freeComputers.append(comp)
-
-                                print(freeComputers)
-                                print("Reservations with computers found at this time")
-
-                                if len(freeComputers) <= 0:
-                                    return Response({"error": "No free computers at this time."}, status=status.HTTP_400_BAD_REQUEST)
-                                else:
-
-
-                                    selectedComputer = Computer.objects.get(pk=freeComputers[0])
-                                    if start_recurring != None and end_recurring != None:
-
-                                        conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, True, end_recurring, conferenceType)
-                                        print(conferenceLink)
-
-                                        link = conferenceLink["link"]
-                                        id = conferenceLink["id"]
-
-                                        startSplit = start_time
-                                        startTz = start_time.split('T')[1]
-
-                                        endSplit = end_time
-                                        endTz = end_time.split('T')[1]
-
-                                        startRecSplit = start_recurring.split('T')[0]
-                                        startRecTz = start_recurring.split('T')[1]
-
-                                        endRecSplit = end_recurring.split('T')[0]
-                                        endRecTz = end_recurring.split('T')[1]
-
-                                        startRecurFormatted = datetime.strptime(startRecSplit, '%Y-%m-%d')
-                                        endRecurFormatted = datetime.strptime(endRecSplit, '%Y-%m-%d')
-
-                                        startFormatted = datetime.strptime(startSplit, '%Y-%m-%dT%H:%M:%S%fZ')
-                                        endFormatted = datetime.strptime(endSplit, '%Y-%m-%dT%H:%M:%S%fZ')
-
-                                        print(startFormatted)
-                                        print(endFormatted)
-
-                                        #Find Recurring Date Difference
-                                        recurr_diff = endRecurFormatted - startRecurFormatted
-                                        numberOfWeeks = recurr_diff.days // 7
-
-                                        #Find Recurring Date Difference
-                                        hour_diff = endFormatted - startFormatted
-                                        numOfSessionHours = hour_diff
-                                        print(numOfSessionHours)
-
-                                        computerReservationsList = []
-                                        #Make Reccurring Object Creation Logic
-                                        #Create the inital day of reservation
-                                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, mentor=mentor, student=studentObj, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
-                                        newComputerReserve.save()
-                                        computerReservationsList.append(newComputerReserve)
-
-                                        #Create the temporary computer reservation objects
-                                        date_tmp = startRecurFormatted
-                                        for week in range(0, numberOfWeeks):
-                                            print("Computer Reservation Created")
-                                            new_start_date = date_tmp + timedelta(days=7)
-                                            date_tmp = new_start_date
-                                            new_start_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, startFormatted.hour, startFormatted.minute)
-                                            new_end_date_object = datetime(new_start_date.year, new_start_date.month, new_start_date.day, endFormatted.hour, endFormatted.minute)
-                                            print(new_start_date_object)
-                                            print(new_end_date_object)
-                                            formattedStartDate =  new_start_date_object.strftime('%Y/%m/%d')
-                                            formattedEndDate = new_end_date_object.strftime('%Y/%m/%d')
-                                            print(formattedStartDate)
-                                            print(formattedEndDate)
-
-                                            newComputerReserve = ComputerReservation.objects.create(start_time=new_start_date_object, end_time=new_end_date_object, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
-                                            newComputerReserve.save()
-                                            computerReservationsList.append(newComputerReserve)
-
-
-                                        computerReserveSerializer = serializers.ComputerReservationSerializer(computerReservationsList, many=True)
-                                        print(computerReserveSerializer.data)
-
-                                    else:
-
-                                        conferenceLink = generateCalendarEvent(username, mentor.email, directorEmail, start, end, mentor.email, False, None,conferenceType)
-                                        print(conferenceLink)
-
-                                        link = conferenceLink["link"]
-                                        id = conferenceLink["id"]
-
-                                        newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentor, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
-                                        newComputerReserve.save()
-                                        computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
-                                        print(computerReserveSerializer.data)
+                                    print(computerReserveSerializer.data)
 
 
                     if start_time:
@@ -1220,13 +1226,16 @@ class UserPreferenceSlotViews(APIView):
 
                     userSlot.save()
 
-                    if student:
+                    if student or mentor:
 
                         conferenceURL = ''
                         conferenceId = ''
 
                         directorEmail = 'mentor@villagebookbuilders.org'
-                        username = studentObj.first_name + ' ' + studentObj.last_name
+                        username = ''
+
+                        if studentObj:
+                            username = studentObj.first_name + ' ' + studentObj.last_name
 
                         start = start_time.strip('Z')
                         end = end_time.strip('Z')
@@ -1244,7 +1253,12 @@ class UserPreferenceSlotViews(APIView):
                             conferenceId = conferenceLink["id"]
 
                         for resev in reservations:
-                            resev.student = studentObj
+                            if studentObj:
+                                resev.student = studentObj
+
+                            if mentorObj:
+                                resev.mentor = mentorObj
+
                             resev.conferenceURL = conferenceURL
                             resev.meetingID = conferenceId
                             resev.save()
@@ -1266,26 +1280,27 @@ class UserPreferenceSlotViews(APIView):
                     link = settings.FRONTEND_URL
 
                     #Email to Mentor.
-                    msg = EmailMessage(
-                      from_email='mentor@villagebookbuilders.org',
-                      to=[mentorObj.email],
-                    )
-                    msg.template_id = "d-e7ad975f9ab1495ab5418fe66997a73e"
-                    msg.dynamic_template_data = {
-                      "first_name": studentObj.first_name,
-                      "last_name": studentObj.last_name,
-                      "username": studentObj.username,
-                      "mentor_email": mentorObj.email,
-                      "program":program,
-                      "session_day": session_day,
-                      "btn_link": link
-                    }
-                    #print(msg.dynamic_template_data)
+                    if studentObj:
+                        msg = EmailMessage(
+                          from_email='mentor@villagebookbuilders.org',
+                          to=[mentorObj.email],
+                        )
+                        msg.template_id = "d-e7ad975f9ab1495ab5418fe66997a73e"
+                        msg.dynamic_template_data = {
+                          "first_name": studentObj.first_name,
+                          "last_name": studentObj.last_name,
+                          "username": studentObj.username,
+                          "mentor_email": mentorObj.email,
+                          "program":program,
+                          "session_day": session_day,
+                          "btn_link": link
+                        }
+                        #print(msg.dynamic_template_data)
 
-                    try:
-                        msg.send(fail_silently=False)
-                    except Exception as e:
-                        print(e)
+                        try:
+                            msg.send(fail_silently=False)
+                        except Exception as e:
+                            print(e)
 
 
                     userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
