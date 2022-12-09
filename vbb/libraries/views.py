@@ -787,7 +787,7 @@ class UserPreferenceSlotViews(APIView):
 
 
 
-                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
+                            userSlot = UserPreferenceSlot.objects.create(start_time=start_time, end_time=end_time, start_recurring=start_recurring, end_recurring=end_recurring, is_recurring=True, computer_slot=availableSlot, mentor=mentorObj, conference_type=conferenceType)
                             userSlot.save()
                             userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
 
@@ -845,10 +845,15 @@ class UserPreferenceSlotViews(APIView):
                 program = library.name
                 link = settings.FRONTEND_URL
 
+                librarian_email_addresses = ['mentor@villagebookbuilders.org']
+
+                for librarian in librarians:
+                    librarian_email_addresses.append(librarian.user.email)
+
                 #Email for Librarian.
                 msg = EmailMessage(
                   from_email='mentor@villagebookbuilders.org',
-                  to=[librarians[0].user.email],
+                  to=librarian_email_addresses,
                 )
                 msg.template_id = "d-67c26ccc234746beacdb03ea6cee97b8"
                 msg.dynamic_template_data = {
@@ -859,7 +864,6 @@ class UserPreferenceSlotViews(APIView):
                   "session_day": session_day,
                   "btn_link": link
                 }
-                msg.subject = "A mentor has created a new preference slot. Sign in now to assign them a student."
                 #print(msg.dynamic_template_data)
 
                 try:
@@ -999,6 +1003,14 @@ class UserPreferenceSlotViews(APIView):
 
                             directorEmail = 'mentor@villagebookbuilders.org'
                             username = studentObj.first_name + ' ' + studentObj.last_name
+
+                            startObj = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S%fZ')
+                            endObj = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S%fZ')
+
+                            start = datetime.strftime(startObj, '%Y-%m-%dT%H:%M:%S')
+                            end = datetime.strftime(endObj, '%Y-%m-%dT%H:%M:%S')
+                            print(start)
+                            print(end)
 
 
                             start = datetime.strptime(userSlot.start_time, '%Y-%m-%dT%H:%M:%S%fZ')
@@ -1202,6 +1214,9 @@ class UserPreferenceSlotViews(APIView):
                     if end_recurring:
                         userSlot.end_recurring = end_recurring
 
+                    if conferenceType:
+                        userSlot.conference_type = conferenceType
+
 
                     userSlot.save()
 
@@ -1265,7 +1280,6 @@ class UserPreferenceSlotViews(APIView):
                       "session_day": session_day,
                       "btn_link": link
                     }
-                    msg.subject = "You've been assigned a new student. Sign in now to view your sessions."
                     #print(msg.dynamic_template_data)
 
                     try:
@@ -1456,7 +1470,7 @@ class ComputerReservationViews(APIView):
             elif user.role == 2:
                 userSlots = ComputerReservation.objects.filter(mentor=user.pk)
             else:
-                return Response({"error": "User must be a mentor or student to make a reservation slot."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "User must be a mentor or student to get a reservation slot."}, status=status.HTTP_400_BAD_REQUEST)
 
         except ComputerReservation.DoesNotExist:
             return Response({"error": "No reservation slots with this userId could be found."}, status=status.HTTP_400_BAD_REQUEST)
@@ -1573,7 +1587,7 @@ class BookComputerReservationViews(APIView):
                 # student_attended = serializer.validated_data["student_attended"]
 
                 computerReservation = {}
-
+                print(conferenceType)
 
                 try:
                     studentUser = User.objects.get(pk=student)
@@ -1595,6 +1609,8 @@ class BookComputerReservationViews(APIView):
                 except UserPreferenceSlot.DoesNotExist:
                     return Response({"error": "UserPreferenceSlot with that provided uniqueID could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
+                if conferenceType:
+                    userPreferenceSlot.conference_type = conferenceType
 
                 userPreferenceSlot.student = studentUser
                 userPreferenceSlot.save()

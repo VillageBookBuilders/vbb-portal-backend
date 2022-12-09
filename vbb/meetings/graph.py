@@ -72,7 +72,7 @@ class Graph:
 
 
         if isRecurring:
-            endRecurrDayOfWeek = datetime.datetime.strptime(recurringEndDate,'%Y-%m-%dT%H:%M:%S').strftime('%A')
+            endRecurrDayOfWeek = datetime.datetime.strptime(start_time,'%Y-%m-%dT%H:%M:%S').strftime('%A')
 
             startRecurrDate = datetime.datetime.strptime(start_time,'%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
             endRecurrDate = datetime.datetime.strptime(recurringEndDate,'%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
@@ -87,11 +87,11 @@ class Graph:
               },
               "start": {
                   "dateTime": start_time,
-                  "timeZone": "Pacific Standard Time"
+                  "timeZone": "UTC"
               },
               "end": {
                   "dateTime": end_time,
-                  "timeZone": "Pacific Standard Time"
+                  "timeZone": "UTC"
               },
               "location":{
                   "displayName":"MS Calendar Invite."
@@ -133,11 +133,11 @@ class Graph:
               },
               "start": {
                   "dateTime": start_time,
-                  "timeZone": "Pacific Standard Time"
+                  "timeZone": "UTC"
               },
               "end": {
                   "dateTime": end_time,
-                  "timeZone": "Pacific Standard Time"
+                  "timeZone": "UTC"
               },
               "location":{
                   "displayName":"MS Calendar Invite."
@@ -161,11 +161,12 @@ class Graph:
               "isOnlineMeeting": True,
               "onlineMeetingProvider": "teamsForBusiness"
             }
+        print(event)
 
         jsonPayload = json.dumps(event)
-        print(jsonPayload)
+        #print(jsonPayload)
 
         users_response = self.app_client.post(request_url, data=jsonPayload, headers={'Content-Type': 'application/json'})
 
-        print(users_response)
+        #print(users_response)
         return users_response.json()

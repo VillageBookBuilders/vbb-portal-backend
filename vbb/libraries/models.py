@@ -84,7 +84,7 @@ class LibraryComputerSlots(models.Model):
 
 class UserPreferenceSlot(models.Model):
     uniqueID = models.UUIDField(max_length=1024, default=uuid.uuid4, editable=False)
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='preference_student')
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,  blank=True, on_delete=models.SET_NULL, related_name='preference_student')
     mentor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,  blank=True, on_delete=models.SET_NULL, related_name='preference_mentor')
     computer_slot = models.ForeignKey(LibraryComputerSlots, null=True, on_delete=models.SET_NULL, related_name='preference_slot')
     start_time = models.DateTimeField(default=None, blank=True, null=True)
