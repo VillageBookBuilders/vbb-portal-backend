@@ -5,7 +5,7 @@ django-coverage-plugin==2.0.2  # https://github.com/nedbat/django_coverage_plugi
 
 django-debug-toolbar==3.2.4  # https://github.com/jazzband/django-debug-toolbar
 django-extensions==3.1.5  # https://github.com/django-extensions/django-extensions
-django-stubs==1.10.1  # https://github.com/typeddjango/django-stubs
+django-stubs==1.13.1  # https://github.com/typeddjango/django-stubs
 djangorestframework-stubs==1.6.0  # https://github.com/typeddjango/djangorestframework-stubs
 
 # Django
