@@ -221,7 +221,7 @@ class CreateUserPreferenceSlotSerializer(serializers.Serializer):
 
 
 class UpdateUserPreferenceSlotSerializer(serializers.Serializer):
-    student = serializers.IntegerField(required=False)
+    student = serializers.IntegerField(required=False, allow_null=True)
     mentor = serializers.IntegerField(required=False, allow_null=True)
     lib_computer_slot = serializers.CharField(required=False)
     start_time = serializers.CharField(required=False, max_length=1024)

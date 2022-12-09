@@ -957,17 +957,20 @@ class UserPreferenceSlotViews(APIView):
                     except KeyError:
                         conferenceType = None
 
-                    try:
-                        studentObj = User.objects.get(pk=student)
-                        userSlot.student = studentObj
-                    except User.DoesNotExist:
-                        return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+
+                    if student:
+                        try:
+                            studentObj = User.objects.get(pk=student)
+                            userSlot.student = studentObj
+                        except User.DoesNotExist:
+                            return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-                    try:
-                        mentorObj = User.objects.get(pk=mentor)
-                    except User.DoesNotExist:
-                        return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
+                    if mentor:
+                        try:
+                            mentorObj = User.objects.get(pk=mentor)
+                        except User.DoesNotExist:
+                            return Response({"error": "User with that provided id could not be found."}, status=status.HTTP_400_BAD_REQUEST)
 
                     if student:
                         studentUser = User.objects.get(pk=student)
@@ -1223,7 +1226,10 @@ class UserPreferenceSlotViews(APIView):
                         conferenceId = ''
 
                         directorEmail = 'mentor@villagebookbuilders.org'
-                        username = studentObj.first_name + ' ' + studentObj.last_name
+                        username = ''
+
+                        if studentObj:
+                            username = studentObj.first_name + ' ' + studentObj.last_name
 
                         start = start_time.strip('Z')
                         end = end_time.strip('Z')
@@ -1241,8 +1247,12 @@ class UserPreferenceSlotViews(APIView):
                             conferenceId = conferenceLink["id"]
 
                         for resev in reservations:
-                            resev.student = studentObj
-                            resev.mentor = mentorObj
+                            if studentObj:
+                                resev.student = studentObj
+
+                            if mentorObj:
+                                resev.mentor = mentorObj
+
                             resev.conferenceURL = conferenceURL
                             resev.meetingID = conferenceId
                             resev.save()
@@ -1264,26 +1274,27 @@ class UserPreferenceSlotViews(APIView):
                     link = settings.FRONTEND_URL
 
                     #Email to Mentor.
-                    msg = EmailMessage(
-                      from_email='mentor@villagebookbuilders.org',
-                      to=[mentorObj.email],
-                    )
-                    msg.template_id = "d-e7ad975f9ab1495ab5418fe66997a73e"
-                    msg.dynamic_template_data = {
-                      "first_name": studentObj.first_name,
-                      "last_name": studentObj.last_name,
-                      "username": studentObj.username,
-                      "mentor_email": mentorObj.email,
-                      "program":program,
-                      "session_day": session_day,
-                      "btn_link": link
-                    }
-                    #print(msg.dynamic_template_data)
+                    if studentObj:
+                        msg = EmailMessage(
+                          from_email='mentor@villagebookbuilders.org',
+                          to=[mentorObj.email],
+                        )
+                        msg.template_id = "d-e7ad975f9ab1495ab5418fe66997a73e"
+                        msg.dynamic_template_data = {
+                          "first_name": studentObj.first_name,
+                          "last_name": studentObj.last_name,
+                          "username": studentObj.username,
+                          "mentor_email": mentorObj.email,
+                          "program":program,
+                          "session_day": session_day,
+                          "btn_link": link
+                        }
+                        #print(msg.dynamic_template_data)
 
-                    try:
-                        msg.send(fail_silently=False)
-                    except Exception as e:
-                        print(e)
+                        try:
+                            msg.send(fail_silently=False)
+                        except Exception as e:
+                            print(e)
 
 
                     userSlotSerializer = serializers.UserPreferenceSlotSerializer(userSlot, many=False)
