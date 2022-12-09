@@ -1013,8 +1013,14 @@ class UserPreferenceSlotViews(APIView):
                         username = studentObj.first_name + ' ' + studentObj.last_name
 
 
-                        start = userSlot.start_time.strftime('%Y-%m-%dT%H:%M:%S')
-                        end = userSlot.end_time.strftime('%Y-%m-%dT%H:%M:%S')
+                        startStriped = userSlot.start_time.strip('Z')
+                        endStriped = userSlot.end_time.strip('Z')
+
+                        start = datetime.strptime(startStriped, '%Y-%m-%dT%H:%M:%S')
+                        end = datetime.strptime(endStriped, '%Y-%m-%dT%H:%M:%S')
+
+                        start =  start.strftime('%Y-%m-%dT%H:%M:%S')
+                        end = end.strftime('%Y-%m-%dT%H:%M:%S')
 
 
                         if len(allComputersReservations) == 0:

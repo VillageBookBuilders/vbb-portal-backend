@@ -134,7 +134,9 @@ class google_apis:
     end_date_formated = end_date_formated.replace('-', '')
     end_date_formated += 'Z'
 
-    if recurringEndDate:
+    if recurringEndDate and isRecurring == True:
+        print(recurringEndDate)
+        recurringEndDate = recurringEndDate.strip('Z')
         endrecurr_obj = datetime.strptime(recurringEndDate, '%Y-%m-%dT%H:%M:%S')
         endrecurr_obj_formated = recurringEndDate.replace(':', '')
         endrecurr_obj_formated = endrecurr_obj_formated.replace('-', '')
