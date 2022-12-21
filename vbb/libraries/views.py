@@ -882,6 +882,9 @@ class UserPreferenceSlotViews(APIView):
             reservations = []
             library = {}
 
+            conferenceURL = ''
+            conferenceId = ''
+
             if uniqueID == "" or uniqueID == None:
                     return Response({"error": "Provided uniqueID cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -1033,6 +1036,9 @@ class UserPreferenceSlotViews(APIView):
                                 link = conferenceLink["link"]
                                 id = conferenceLink["id"]
 
+                                conferenceURL = link
+                                conferenceId = id
+
                                 startSplit = start_time
                                 startTz = start_time.split('T')[1]
 
@@ -1101,6 +1107,9 @@ class UserPreferenceSlotViews(APIView):
                                 link = conferenceLink["link"]
                                 id = conferenceLink["id"]
 
+                                conferenceURL = link
+                                conferenceId = id
+
                                 newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=availableComputers[0], transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                 newComputerReserve.save()
                                 computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
@@ -1133,6 +1142,9 @@ class UserPreferenceSlotViews(APIView):
 
                                     link = conferenceLink["link"]
                                     id = conferenceLink["id"]
+
+                                    conferenceURL = link
+                                    conferenceId = id
 
                                     startSplit = start_time
                                     startTz = start_time.split('T')[1]
@@ -1202,6 +1214,9 @@ class UserPreferenceSlotViews(APIView):
                                     link = conferenceLink["link"]
                                     id = conferenceLink["id"]
 
+                                    conferenceURL = link
+                                    conferenceId = id
+
                                     newComputerReserve = ComputerReservation.objects.create(start_time=start_time, end_time=end_time, reserved_slot=userSlot, student=studentObj, mentor=mentorUser, computer=selectedComputer, transaction_id=uuid.uuid4(), conferenceURL=link, meetingID=id)
                                     newComputerReserve.save()
                                     computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
@@ -1227,9 +1242,6 @@ class UserPreferenceSlotViews(APIView):
                     userSlot.save()
 
                     if student or mentor:
-
-                        conferenceURL = ''
-                        conferenceId = ''
 
                         directorEmail = 'mentor@villagebookbuilders.org'
                         username = ''
@@ -1259,8 +1271,8 @@ class UserPreferenceSlotViews(APIView):
                             if mentorObj:
                                 resev.mentor = mentorObj
 
-                            #resev.conferenceURL = conferenceURL
-                            #resev.meetingID = conferenceId
+                            resev.conferenceURL = conferenceURL
+                            resev.meetingID = conferenceId
                             resev.save()
                             #print(resev)
 
