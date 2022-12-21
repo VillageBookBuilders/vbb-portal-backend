@@ -987,6 +987,9 @@ class UserPreferenceSlotViews(APIView):
                         #print(studentUser)
                         #print(reservations)
 
+                    print('Reservations')
+                    print(len(reservations))
+
                     if len(reservations) == 0:
                         #print('No reservations or mentor')
 
@@ -1221,7 +1224,33 @@ class UserPreferenceSlotViews(APIView):
                                     newComputerReserve.save()
                                     computerReserveSerializer = serializers.ComputerReservationSerializer(newComputerReserve, many=False)
                                     print(computerReserveSerializer.data)
+                    else:
 
+                        directorEmail = 'mentor@villagebookbuilders.org'
+                        username = ''
+
+                        if studentObj:
+                            username = studentObj.first_name + ' ' + studentObj.last_name
+                        #Reservation exist, just create events.
+                        start = start_time.strip('Z')
+                        end = end_time.strip('Z')
+
+                        if end_recurring:
+                            endRecurring = end_recurring.strip('Z')
+
+                        if start_recurring != None and end_recurring != None:
+                            conferenceLink = generateCalendarEvent(username, mentorObj.email, directorEmail, start, end, mentorObj.email, True, endRecurring, conferenceType)
+                            conferenceURL = conferenceLink["link"]
+                            conferenceId = conferenceLink["id"]
+                        else:
+                            conferenceLink = generateCalendarEvent(username, mentorObj.email, directorEmail, start, end, mentorObj.email, False, None, conferenceType)
+                            conferenceURL = conferenceLink["link"]
+                            conferenceId = conferenceLink["id"]
+
+                        for resev in reservations:
+                            resev.conferenceURL = conferenceURL
+                            resev.meetingID = conferenceId
+                            resev.save()
 
                     if start_time:
                         userSlot.start_time = start_time
@@ -1271,8 +1300,8 @@ class UserPreferenceSlotViews(APIView):
                             if mentorObj:
                                 resev.mentor = mentorObj
 
-                            resev.conferenceURL = conferenceURL
-                            resev.meetingID = conferenceId
+                            # resev.conferenceURL = conferenceURL
+                            # resev.meetingID = conferenceId
                             resev.save()
                             #print(resev)
 
