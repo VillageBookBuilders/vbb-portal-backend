@@ -116,7 +116,9 @@ class ComputerReservation(models.Model):
     end_time = models.DateTimeField(default=None, blank=True, null=True)
     is_recurring = models.BooleanField(default=False)
     student_attended = models.BooleanField(default=False)
+    student_attended_time = models.DateTimeField(default=None, blank=True, null=True)
     mentor_attended = models.BooleanField(default=False)
+    mentor_attended_time = models.DateTimeField(default=None, blank=True, null=True)
 
     #start_recurring = models.DateTimeField(default=None, blank=True, null=True)
     #end_recurring = models.DateTimeField(default=None, blank=True, null=True)
@@ -127,3 +129,11 @@ class ComputerReservation(models.Model):
 
     class Meta:
         verbose_name = "ComputerReservation"
+
+    def save(self, *args, **kwargs):
+        if not self.mentor_attended_time and self.mentor_attended:
+            self.mentor_attended_time = timezone.now()
+        if not self.student_attended_time and self.student_attended:
+            self.student_attended_time = timezone.now()
+
+        super(ComputerReservation, self).save(*args, **kwargs)
