@@ -1,4 +1,5 @@
 import pytz
+from datetime import datetime, timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -46,8 +47,15 @@ class User(AbstractUser):
     is_mentor = models.BooleanField(default=False)
     is_student = models.BooleanField(default=False)
     date_of_birth = models.DateField(null=True)
+    has_dropped_out = models.BooleanField(default=False)
+    drop_out_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         if self.email:
             return self.email
         return self.username
+
+    def save(self, *args, **kwargs):
+        if self.has_dropped_out and self.drop_out_date == None:
+            self.drop_out_date = datetime.now(timezone.utc)
+        super().save(*args, **kwargs)

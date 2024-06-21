@@ -11,7 +11,7 @@ class UserAdmin(auth_admin.UserAdmin):
 
     fieldsets = (
         (None, {"fields": ["password"]}),
-        (_("Personal info"), {"fields": ("name", "email", "first_name","last_name", "profileImage", "role","is_student", "is_mentor", "is_librarian")}),
+        (_("Personal info"), {"fields": ("name", "email", "first_name","last_name", "profileImage", "role","is_student", "is_mentor", "is_librarian", "has_dropped_out")}),
         (
             _("Permissions"),
             {
@@ -24,7 +24,7 @@ class UserAdmin(auth_admin.UserAdmin):
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined", "drop_out_date")}),
     )
     list_display = ["username", "email", "first_name", "last_name","is_superuser"]
     search_fields = ["first_name", "last_name"]
