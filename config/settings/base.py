@@ -454,8 +454,8 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_LINK = FRONTEND_URL + "/register/confirm/"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-# ADMIN_EMAIL = "daniel.gomez@villagebookbuilders.org"
-ADMIN_EMAIL = "benjaminlibrarian@gmail.com"
+ADMIN_EMAIL = "daniel.gomez@villagebookbuilders.org"
+
 
 # CORS_ALLOWED_ORIGINS = [
 #     "https://app.villagebookbuilders.org",
